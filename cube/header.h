@@ -181,30 +181,30 @@ struct corpo_info{
     
     int base,altura;
     
-    unsigned int point_A_x:7;
-    unsigned int point_A_y:7;/*a propia linha do mapa : exempl
+    unsigned int point_A_x:2;
+    unsigned int point_A_y:2;/*a propia linha do mapa : exempl
                                  {A,1,1,1,1,1,1} A > oeste
                                  {1,0,0,0,0,0,1}
                               *  {1,1,1,1,1,1,1} 
                                  */
    
-    unsigned int point_B_x:7;
-    unsigned int point_B_y:7;/* o último ponto do objeto leste
+    unsigned int point_B_x:2;
+    unsigned int point_B_y:2;/* o último ponto do objeto leste
                                  * 
                                  {1,1,1,1,1,1,B}B > leste
                                  {1,0,0,0,0,0,1}
                                  {1,1,1,1,1,1,1} 
                                  */
-    unsigned int point_C_x:7;
-    unsigned int point_C_y:7;/* o último ponto do objeto leste
+    unsigned int point_C_x:2;
+    unsigned int point_C_y:2;/* o último ponto do objeto leste
                                  * 
                                  {1,1,1,1,1,1,B}
                                  {1,0,0,0,0,0,1}
                                  {C,1,1,1,1,1,1} C> oeste 
                                  */
     
-    unsigned int point_D_x:7;
-    unsigned int point_D_y:7;/* o último ponto do objeto leste
+    unsigned int point_D_x:2;
+    unsigned int point_D_y:2;/* o último ponto do objeto leste
                                  * 
                                  {1,1,1,1,1,1,1}
                                  {1,0,0,0,0,0,1}
