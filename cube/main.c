@@ -9,9 +9,9 @@
 
 #include "header.h"
 
-
-#if defined(WIN_32)
-        
+#ifdef _WIN32 /* _Win32 is usually defined by compilers targeting 32 or 64 bit Windows systems
+http://en.wikipedia.org/wiki/C_preprocessor
+*/
         #define _CONIO_
         #include <conio.h>
 #endif
@@ -25,7 +25,7 @@ int getchar(void);
 
 
 
-void main(int argc,char *argv[]){char offset;
+int main(int argc,char *argv[]){char offset;
 
      message("Bem Vindo ao KNiN Project\n");
      
@@ -53,6 +53,7 @@ void main(int argc,char *argv[]){char offset;
          
 #if defined(_CONIO_)
              offset = getch();
+
     #else
              system("stty echo raw");
              

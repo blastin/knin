@@ -4,6 +4,7 @@
  *
  * Created on 24 de Outubro de 2011, 17:11
  */
+
 #include "header.h"
 
 
@@ -31,7 +32,7 @@ for(row=0;row < m_i->altura;row++)
   _FUNC(putmap){register int row,colun;
 
      
-#ifdef WIN_32
+#ifdef _WIN32
     system("cls");
 #else
     system("clear");
