@@ -1,3 +1,5 @@
+//Author: blastin
+
 #include "header.h"
 
 

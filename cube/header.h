@@ -8,11 +8,11 @@
 /*#ifndef HEADER_H
         #define	HEADER_H*/
 
-#define create_object_m(x) struct map_info object_ ## x
-#define create_object_c(x) struct corpo_info object_ ## x
-
-#define create_msg(x) struct output_message message_ ## x
-
+#define create_object_m(x) struct map_info object_        ## x
+#define create_object_c(x) struct corpo_info object_      ## x
+#define create_msg(x)      struct output_message message_ ## x
+#define VOID_MAP(x)        object_                        ## x
+#define VOID_CORPO(x)      object_                        ## x
 
 extern int message(const char *);
 extern int system(const char *);
@@ -20,20 +20,15 @@ extern int write(int fd,const void * buf,int n);
 extern int read(int fd,const void * buf,int n);
 
 
-#define VOID_MAP(x) object_ ## x
-#define VOID_CORPO(x) object_ ## x
-
 
 typedef int flag;
-
 typedef struct map_info * map_t;
-
 typedef struct corpo_info * corpo_t;
+
 
 
 #define MAX_BASE 200
 #define MAX_ALTURA 200
-
 #define MAX_ARRAY_SIZE 120
 
 
