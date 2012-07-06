@@ -1,0 +1,63 @@
+ 
+      /*      
+    {A,1,1,1,B}
+    {1,0,0,0,1}
+    {1,0,0,0,1}
+    {1,0,0,0,1}
+    {C,1,1,1,D} 
+    */
+    
+                /*                  5  6  7  8  9 Base -1
+                 *  0   1  2  3  4  0  1  2  3  4
+    *{1,M_A - C_A} {OC,BM,BM,BM,BM},
+                   {BM,NM,NM,NM,BM},
+                   {BM,NM,NM,NM,BM},
+                   {BM,NM,NM,NM,BM},
+                   {BM,BM,BM,BM,LC},{BASE-1,POINT_OESTE_Y + C_A - 1}
+                 * 
+                 * 
+                 * 01,64,ponto oeste {x,y}
+                  01,59,ponto leste {x,y}
+                 * 
+                 * a propia linha do mapa : exempl
+                                 
+                 * {o,1,1,1,1,1,1} o > oeste     
+                 * {1,0,0,0,0,0,1}
+                  
+                 *  o último ponto do objeto leste
+                              
+                 *    * 
+                                 {1,1,1,1,1,1,1}
+                                 {1,0,0,0,0,0,1}
+                                 {1,1,1,1,1,1,l} l > leste
+                                      
+                 */
+
+
+
+/*      
+    {A,1,1,1,B}
+    {1,0,0,0,1}
+    {1,0,0,0,1}
+    {1,0,0,0,1}
+    {C,1,1,1,D} 
+   
+    c_i->point_B_y = c_i->point_A_y =  m_i->altura - c_i->altura - 1    ;
+    c_i->point_D_y = c_i->point_C_y =  c_i->point_A_y + c_i->altura - 1;
+     
+    c_i->point_C_x = c_i->point_A_x =  1;
+    c_i->point_D_x = c_i->point_B_x =  c_i->base -1;
+    
+    
+     
+     m_i->m_s[c_i->point_B_y][c_i->point_B_x] = m_i->m_s[c_i->point_A_y][c_i->point_A_x] = CORPO_MAP;
+     m_i->m_s[c_i->point_D_y][c_i->point_D_x] = m_i->m_s[c_i->point_C_y][c_i->point_C_x] = CORPO_MAP;
+   
+    
+                 */
+
+//printf("PONTO A : m_i->m_s[%d][%d]\n",c_i->point_A_y,c_i->point_A_x);
+    //printf("PONTO B : m_i->m_s[%d][%d]\n",c_i->point_B_y,c_i->point_B_x);
+    //printf("PONTO C : m_i->m_s[%d][%d]\n",c_i->point_C_y,c_i->point_C_x);
+    //printf("PONTO D : m_i->m_s[%d][%d]\n",c_i->point_D_y,c_i->point_D_x);
+    //printf("row : %d || colun > %d\n",row,colun);
