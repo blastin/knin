@@ -1,9 +1,5 @@
 #include "header.h"
 
-extern int write(int fd,const void * buf,int n);
-extern int read(int fd,const void * buf,int n);
-
-
 
 int putchar(int n){
 

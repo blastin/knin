@@ -14,6 +14,11 @@
 #define create_msg(x) struct output_message message_ ## x
 
 
+extern int message(const char *);
+extern int system(const char *);
+extern int write(int fd,const void * buf,int n);
+extern int read(int fd,const void * buf,int n);
+
 
 #define VOID_MAP(x) object_ ## x
 #define VOID_CORPO(x) object_ ## x
