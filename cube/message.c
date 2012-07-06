@@ -1,7 +1,7 @@
 #include "header.h"
 
-int write(int fd,const void * buf,int n);
-int read(int fd,const void * buf,int n);
+extern int write(int fd,const void * buf,int n);
+extern int read(int fd,const void * buf,int n);
 
 
 
