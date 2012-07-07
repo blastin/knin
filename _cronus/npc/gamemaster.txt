@@ -1,0 +1,363 @@
+//===== Cronus Script ========================================
+//= Controle administrativo sql
+//===== Por: =================================================
+//= blastin
+//===== Compatibilidade: =====================================
+//= Cronus [3312]; Renewal
+//===== Descrição: ===========================================
+/*  * Possibilita a criação de uma conta in-game
+    * Possibilita ao administrador requerir uma nova senha ao membro
+    * Possibilita aos players o pedido de uma nova senha
+    * Possibilita aos players o pedido vip para conta
+    *
+*/	
+//===== Comentários Adicionais: ==============================
+//= 0.3 - Funcional ( Versão básica com vip level) 
+//============================================================
+/*
+SQL COMMANDS :
+
+ALTER TABLE login add flag_tmp_passwd integer DEFAULT 0;
+ALTER TABLE login ADD vip_day integer DEFAULT 0;
+ATLER TABLE login ADD flag_vip SMALLINT DEFAULT 0;
+
+
+INFO :
+
+mes "Nome: "+(	(.@gmlevel) ? "^723A33"+(.@player$)+"^000000" : (.@player$)	);
+mes "Level: "+((.@gmlevel) ? ((.@gmlevel == .@MASTER_LEVEL) ? .@gmlevel+" ^B11300[ADM]^000000 " : .@gmlevel+" [CM] ") : .@gmlevel+" [PLAYER] " );
+
+callfunc(._STAOUT_$,1,.@gmlevel,.@player$,.@MASTER_LEVEL);
+
+	*/
+
+
+jawaii,188,224,0	script	Game System Control	403,{
+//============================================================
+set .@player$,strcharinfo(0);
+set .@debug_account_sql,0;
+
+set .@gmlevel,getgmlevel();
+
+//============================================================
+
+lab_backdoor:
+
+callfunc(._STAOUT_$,1,.@gmlevel,.@player$,.MASTER_LEVEL,.npcname$);
+
+
+
+if (.@gmlevel == .MASTER_LEVEL){ set	 .debug_account_sql,1;
+	//scope variaveís para nova conta
+	//                   
+	//					   AC  SE  Sx  EM  lv    ->> conta,senha_tmpl,Sex,Email,Level
+	setarray .@ac_nov$[0],""," "," "," "," ","NULL";
+	set .@lixo_ac_nov,0;
+	set .@lixo_data,0;
+	//fim
+	//callfunc(._STAOUT_$,"mes",getgmlevel());
+	switch(select("Banco de dados:Eventos")){//SWITCH #01
+		case 1:
+			switch(select("Nova Conta:Modificacoes:Players ["+.count_id_account_password+"]:Saida")){//SWITCH #02
+			
+				case 1: //nova conta
+		
+					do {next;
+				
+						mes .npcname$;
+						mes "Nome da conta : "+.@ac_nov$[0];
+						mes "Senha temporaria :"+.@ac_nov$[1];
+						mes "Sex Char :"+.@ac_nov$[2];
+						mes "email :"+.@ac_nov$[3];
+						mes "level :"+.@ac_nov$[4];
+					
+						switch(.@lixo_ac_nov){
+					
+							case 0: input .@ac_nov$[.@lixo_ac_nov] ;		
+									set .@lixo_ac_nov,1;
+									break;
+								
+							case 1: input .@ac_nov$[.@lixo_ac_nov];
+									set .@lixo_ac_nov,2;
+									break;
+								
+							case 2: input .@ac_nov$[.@lixo_ac_nov];
+									set .@lixo_ac_nov,3;
+									break;
+								
+							case 3: input .@ac_nov$[.@lixo_ac_nov];
+									set .@lixo_ac_nov,4;
+									break;
+								
+							case 4: input .@ac_nov$[.@lixo_ac_nov];
+									set .@lixo_ac_nov,5;
+									break;
+								
+							case 5:next;
+									mes "Informacoes Corretas ? ";
+									mes "Nome da conta : "+.@ac_nov$[0];
+									mes "Senha temporaria :"+.@ac_nov$[1];
+									mes "Sex Char :"+.@ac_nov$[2];
+									mes "email :"+.@ac_nov$[3];
+									mes "level :"+.@ac_nov$[4];
+									switch(select("No:Yes:Exit")){
+									
+									case 1:{
+										cleararray .@ac_nov$[0]," ",5;
+										set .@lixo_ac_nov,0;
+									}break;
+
+									case 2:
+										{ mes "Dados enviados com sucesso";//fix-me with  any colour
+								
+									query_sql(._qy_acc_$+"('"+.@ac_nov$[0]+"','"+.@ac_nov$[1]+"','"+.@ac_nov$[2]+"','"+.@ac_nov$[3]+"',"+.@ac_nov$[4]+",1)");
+										set .@lixo_ac_nov,6;
+										
+									}
+									case 3: set.@lixo_ac_nov,6;
+									break;
+									}
+							}
+					
+					}while(.@lixo_ac_nov != 6);
+					break;//fim case 1 switch #02
+					
+					
+				case 2://Modificação
+					mes "Insira o nome do usuário";
+					input .@user_name$;
+					query_sql("SELECT account_id FROM `login` WHERE userid='"+.@user_name$+"' ",.@account_id);
+					if (.@account_id){
+				
+						do{ 
+							switch(select(" - Nova senha ao usuário: - Level: - Sair")){
+								case 1 :next;
+										
+									callfunc(._STAOUT_$,1,.@gmlevel,.@player$,.MASTER_LEVEL,.npcname$);
+										
+									query_sql ("SELECT flag_tmp_passwd FROM login WHERE account_id="+.@account_id+" ",.@debug_senhatmpl);
+									if (! .@debug_senhatmpl){ mes "Terminar processo : ";
+										if(select("- Modificar: - Não modificar")== 2) break;
+										else{ 
+											callfunc(._STAOUT_$,2,.@account_id);
+											//query_sql ("UPDATE login  set flag_tmp_passwd=1 WHERE account_id="+.@account_id+" ");
+											mes "Modificação realizada com sucesso";
+											}
+									}else mes "Já está habilitado a mudança da senha";
+								
+									break;
+								
+								case 2:
+									do {next;
+										
+										callfunc(._STAOUT_$,1,.@gmlevel,.@player$,.MASTER_LEVEL,.npcname$);
+										mes "ID ACCOUNT:"+.@account_id;
+										mes "Qual mudança de level : ";
+										input .@user_level;
+										if (.@user_level){next;
+											mes .npcname$;
+											mes "Executar as modificações ?";
+											if(select("Sim:Não")== 2) continue; 
+											else{next;
+										
+												set .bool_modificar,1;
+												query_sql ("UPDATE login set level="+.@user_level+" WHERE account_id="+.@account_id+" ");
+												mes "Modificação realizada com sucesso";
+											
+												break;
+												}	
+										}//if .@user_level
+							
+									}while(1);//loop case 2
+								
+								case 3: set .bool_modificar,1;
+										break;
+							}//switch
+						
+						}while( ! .bool_modificar);
+						set .bool_modificar,0;
+					}
+					else {next;
+						mes .npcname$;
+						mes "Player Não encontrado";
+					
+					}break;
+					
+				case 3 : //Players
+					if (.count_id_account_password){
+						switch(select("Senha : Level")){
+							case 1 :
+								next;callfunc(._STAOUT_$,1,.@gmlevel,.@player$,.MASTER_LEVEL,.npcname$);
+								mes ((.count_id_account_password > 1) ? "Existem " : "Existe ")+.count_id_account_password+" Deseja verificar?";
+								if(select("Não:Sim") == 2) {
+										for(set .@lixo,0;.@lixo < .count_id_account_password;set .@lixo,.@lixo +1){next;
+											callfunc(._STAOUT_$,1,.@gmlevel,.@player$,.MASTER_LEVEL,.npcname$);
+											query_sql("select `userid` from login where account_id="+._IDACOUNT_PASSWORD[.@lixo]+" ",.@temp_name$);
+											mes "# "+.@lixo+1+" : "+.@temp_name$+" " ;
+											mes " ";
+											mes "Deseja Confirmar ?";
+											if (select("Não:Sim") == 2) callfunc(._STAOUT_$,2,._IDACOUNT_PASSWORD[.@lixo]);
+											
+											}
+										mes "Modificações realizadas com sucesso";
+										cleararray ._IDACOUNT_PASSWORD[0],0,.count_id_account_password;
+										set .count_id_account_password,0;
+										
+								}else dispbottom "Error...";
+										break;
+							
+							case 2:next;
+							callfunc(._STAOUT_$,1,.@gmlevel,.@player$,.MASTER_LEVEL,.npcname$);
+							/*VIP SYSTEM
+								
+							
+									}
+							
+								*/
+							}
+						}
+					break;
+				
+				
+			}//SWITCH #02
+			break;
+
+		case 2:
+			break;
+	
+	
+		}//SWITCH #01
+	}//IF
+	
+else{ mes "O que deseja fazer?"; // player normal
+	switch(select("Modificação:Vip:Sair")){
+		case 1 : next;
+				callfunc(._STAOUT_$,1,.@gmlevel,.@player$,.MASTER_LEVEL,.npcname$);
+				mes "Qual modificação ? ";
+				switch(select("Senha : Sair")) {next;
+					case 1 :
+						callfunc(._STAOUT_$,1,.@gmlevel,.@player$,.MASTER_LEVEL,.npcname$);
+						mes "Deseja pedir uma nova senha ao administradores ?";
+						if(select("Sim:Não") == 2) break;
+						else {
+								set ._IDACOUNT_PASSWORD[.count_id_account_password],getcharid(3);
+								 set .count_id_account_password,.count_id_account_password + 1;
+								next;
+								mes "Informações enviadas com sucesso";
+						break;
+						}
+					default : break;
+					}
+		case 2: next;
+			callfunc(._STAOUT_$,1,.@gmlevel,.@player$,.MASTER_LEVEL,.npcname$);
+			mes "Olá eu posso ajudar-te com o pedido de level vip";
+			mes "Para isto, preciso apenas checar se em sua conta está autorizado a abertura !!";
+			mes "Deseja verificar ?";
+			next;
+			callfunc(._STAOUT_$,1,.@gmlevel,.@player$,.MASTER_LEVEL,.npcname$);
+			if(select("Sim:Não") == 1){
+				query_sql("select flag_vip from login where account_id="+getcharid(3)+" ",.@flagvip);
+				if (.@flagvip) {
+					mes "Autorização concedida, deseja enviar dados para o sistema anexar sua conta ?";
+					mes " ";
+					mes "Lembre-se de que o pedido apenas será efetuado no horário efetuado pelo administrador";
+					if(select("Terminar:Sair") == 1) { next;
+						set .VIP_DAY_COMMIT[.total_commit_vip_day],getcharid(3);
+						set .total_commit_vip_day,.total_commit_vip_day +1;
+						mes "Informações enviadas com sucesso";
+						}
+					
+				}else {
+					mes "Infelizmente sua conta ainda não está autorizado ao pedido vip";
+					mes "Procure administração para resolver seu problema";
+					}
+				}
+			break;
+		}
+}
+
+close;
+
+OnPcLoginEvent:
+	query_sql ("SELECT flag_tmp_passwd FROM login WHERE account_id="+getcharid(3)+" ",.@debug_senhatmpl);
+	if (.@debug_senhatmpl){
+		do {
+			mes .npcname$;
+			mes "Para maior segurança insira uma nova senha";
+			input .@novasenha$;
+			mes " ";
+			mes "Insira novamente : ";
+			input .@novasenhacheck$;
+			if (getstrlen(.@novasenhacheck$) >= 6 && .@novasenhacheck$ == .@novasenha$) break;
+			else { next;
+				mes "^D55C21Senha não foi aceita^000000";
+				next;
+			}
+		}while(1);
+		next;
+		mes .npcname$;
+		query_sql ("UPDATE login SET user_pass='"+.@novasenha$+"',flag_tmp_passwd=0 WHERE account_id="+getcharid(3)+" ");
+		mes "A senha foi alterada com sucesso";
+		mes " ";
+		mes "Você será desconectado ...";
+		atcommand "@kick "+strcharinfo(0);
+	
+		next;
+		close;
+	}
+	end;
+
+	
+OnClock1850:
+
+	query_sql("update login set flag_vip=0 where vip_day-1=0 ");
+	query_sql("update login set vip_day=vip_day-1 where vip_day > 0 and flag_vip =1");
+	for(set .temp_vip_day_commit,0;.VIP_DAY_COMMIT[.temp_vip_day_commit];set .temp_vip_day_commit,.temp_vip_day_commit + 1)
+		query_sql("update login set vip_day=vip_day+ "+.dias_vips_comum+" where flag_vip=1 and account_id="+.VIP_DAY_COMMIT[.temp_vip_day_commit]+" ");
+	cleararray .VIP_DAY_COMMIT[0],0,.temp_vip_day_commit;
+	set .total_commit_vip_day,0;
+	
+	end;
+	
+OnInit:
+	set ._TICKET_[0],0;//essa 'array' anexa id dos pedidos para não tem reduple modificação;
+	set ._IDACOUNT_PASSWORD[0],0;//id's a serem requeridos nova senha
+	set .count_id_account_password,0;// total de pedidos
+	set ._STAOUT_$,"_STANDARD_OUTPUT_";//sinônimo para a função standard output
+	set ._qy_acc_$,"INSERT INTO `login` (userid,user_pass,sex,email,group_id,flag_tmp_passwd) VALUES";//variável para concatenação query(nova conta)
+	set .npcname$,"					^D55C21"+strnpcinfo(0)+"^000000					";
+	set .MASTER_LEVEL,99;
+	set .bool_modificar,0;
+	set .VIP_DAY_COMMIT[0],0;//ID DE TODOS QUE ADICIONARAM VIP NO DIA
+	set .total_commit_vip_day,0;//total de pedidos
+	set .temp_vip_day_commit,0;
+	set .dias_vips_comum,30;//30 dias
+	set .backdoor,0;
+	end;
+
+
+}
+
+function	script	_STANDARD_OUTPUT_	{	if (! getarg(0)) return -1 ;  else { 
+		switch(getarg(0)){
+			case 1 : 
+				mes getarg(4);
+				mes "Nome: "+(	(getarg(1)) ? "^723A33"+(getarg(2))+"^000000" : (getarg(2))	);
+				mes "Level: "+( (getarg(1)) ? ((getarg(1) == getarg(3)) ? getarg(1)+" ^B11300[ADM]^000000 " : getarg(1)+" [VIP] ") : getarg(1)+" [PLAYER] ");
+				//mes "Email:": fix-me [sql]
+		
+				mes " ";
+				break;
+				
+			case 2 :
+				query_sql ("UPDATE login  set flag_tmp_passwd=1 WHERE account_id="+getarg(1)+" ");
+
+			default : break;
+		
+			}
+			
+		return 0;
+	}
+		
+}
+
