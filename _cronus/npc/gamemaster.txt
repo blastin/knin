@@ -9,7 +9,7 @@
     * Possibilita ao administrador requerir uma nova senha ao membro
     * Possibilita aos players o pedido de uma nova senha
     * Possibilita aos players o pedido vip para conta
-    *
+    * Modificando script conforme o novo emulator do cronus [ renovare ] : level -> group_id
 */	
 //===== Comentários Adicionais: ==============================
 //= 0.3 - Funcional ( Versão básica com vip level) 
