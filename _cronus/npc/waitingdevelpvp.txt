@@ -1,0 +1,87 @@
+//===== Cronus Script ========================================
+//= Waiting Room
+//===== Por: =================================================
+//= Blastin
+//===== Versão Atual: ========================================
+//= 1.0
+//===== Compatibilidade: =====================================
+//= (Cronus [3308] : Renewal
+//===== Descrição: ===========================================
+/* Como forma de ajudar os membros, a função que segue ese algoritmo é
+uma sala de espera para chamada pvp, conforme  a necessidade do administrador.
+*/
+//===== Comentários Adicionais: ==============================
+//= 18/09/2011 - Iniciado
+//= 19/08/2001 - Sistema Funcionando! ['Blastin']
+//============================================================
+/*Atenção :
+Não recomedo a mudança das variavéis ;.player_init e .disable_roomcheck .
+
+Mude as coordenadas para a entrada do mapa escolhida , seguindo as informações na lina 47.
+
+*/
+prontera,150,150,1	script	WaitingDuel	874,{
+end;
+
+OnInit:
+
+    set .player_init,1;
+    set .disable_roomcheck,0;
+
+    set ._zeny_,500000;
+    set .total_player,10;
+    set .name_npc$,"WaitingDuel";
+    set .cidade$,"pvp_n_1-1";
+    set .lvlmin,1;
+    set .lvlmax,99;
+
+    set .delay_search_,12000;//12 segundos.
+    set .tempo,180000;/*Insira aqui o tempo de espera.
+
+    Informações adicionais:
+    1000 mili seconds == 1 segundo
+    60000mili seconds == 1minutos
+
+
+    Qualquer dúvida consulte :
+
+    http://www.convertworld.com/es/tiempo/Milisegundos.html
+    */
+
+
+
+    //Iniciando Chat
+    waitingroom "Waiting pvp Yashiko",.total_player,.name_npc$+"::OnWarp",1,._zeny_,.lvlmin,.lvlmax;
+
+    end;
+
+OnWarp:
+
+    if (.player_init) {set .player_init,0;
+
+        announce (.name_npc$)+" Foi iniciado",bc_all; //OPÇÃO DO USUÁRIO
+        announce "Entrada para o pvp estará aberta durante 03 minutos",bc_all;//OPÇÃO DO USUÁRIO
+        sleep2 .tempo ;
+        warpwaitingpc .cidade$,0,0,.total_player; //"mapaname",coordenada_x,coordenada_y
+
+        do {
+
+                //Desativando e removendo sala 
+                if(! .disable_roomcheck){set .disable_roomcheck,1;
+                        disablewaitingroomevent .name_npc$;
+                        delwaitingroom .name_npc$;
+                }
+                sleep .delay_search_;
+
+        }while(getmapusers(.cidade$));
+
+        //Iniciando Chat,segunda chamada
+        set .disable_roomcheck,0;
+        waitingroom "Waiting pvp Yashiko",.total_player,.name_npc$+"::OnWarp",1,._zeny_,.lvlmin,.lvlmax;
+
+        set .player_init,1;	
+        end;
+
+    }else end;
+
+}

@@ -17,7 +17,7 @@
 /*
 SQL COMMANDS :
 
-ALTER TABLE login add flag_tmp_passwd integer DEFAULT 0;
+ALTER TABLE login ADD flag_tmp_passwd integer DEFAULT 0;
 ALTER TABLE login ADD vip_day integer DEFAULT 0;
 ATLER TABLE login ADD flag_vip SMALLINT DEFAULT 0;
 
@@ -41,7 +41,6 @@ set .@gmlevel,getgmlevel();
 
 //============================================================
 
-lab_backdoor:
 
 callfunc(._STAOUT_$,1,.@gmlevel,.@player$,.MASTER_LEVEL,.npcname$);
 
@@ -283,7 +282,7 @@ OnPcLoginEvent:
 	if (.@debug_senhatmpl){
 		do {
 			mes .npcname$;
-			mes "Para maior segurança insira uma nova senha";
+			mes "Para maior seguranca insira uma nova senha";
 			input .@novasenha$;
 			mes " ";
 			mes "Insira novamente : ";
@@ -332,7 +331,6 @@ OnInit:
 	set .total_commit_vip_day,0;//total de pedidos
 	set .temp_vip_day_commit,0;
 	set .dias_vips_comum,30;//30 dias
-	set .backdoor,0;
 	end;
 
 
@@ -341,7 +339,7 @@ OnInit:
 function	script	_STANDARD_OUTPUT_	{	if (! getarg(0)) return -1 ;  else { 
 		switch(getarg(0)){
 			case 1 : 
-				mes getarg(4);
+				mes getarg(3);
 				mes "Nome: "+(	(getarg(1)) ? "^723A33"+(getarg(2))+"^000000" : (getarg(2))	);
 				mes "Level: "+( (getarg(1)) ? ((getarg(1) == getarg(3)) ? getarg(1)+" ^B11300[ADM]^000000 " : getarg(1)+" [VIP] ") : getarg(1)+" [PLAYER] ");
 				//mes "Email:": fix-me [sql]
