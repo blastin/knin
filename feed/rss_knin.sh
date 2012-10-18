@@ -30,6 +30,7 @@
 #---------------:> Resolvido wget com save--cookie em tracker check
 #---------------:> init_bot retirado, versão obsoleta ....
 #------07/MAR/12:> Problema com condicional de fluxo  em linha 318
+#------18/OUT/12:> Atualização e limpeza
 #test "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END"
 ##--------------:>Função function_ratio_update() criada ;
 # INFO        :
@@ -40,6 +41,10 @@
 
 #TIME_OUT=$(grep '^TIME_OUT' conf/conf.script | cut -d = -f 2)
 reset 
+
+rm -rf null_temp patch_feed conf/.backup/ cookie logs conf/file_var.script 
+mkdir null_temp conf/.backup/ patch_feed cookie logs
+
 
 ACCOUNT=$(grep '^ACCOUNT' conf/conf.script | cut -d = -f 2)
 PASSWD=$(grep '^PASSWD'  conf/conf.script  | cut -d = -f 2)
@@ -87,7 +92,7 @@ function_ratio_update(){
     #-----------------------
 
     #-----------SHAKAW RATIO
-    grep '<b>Ratio</b>' null_temp/web_shakaw_connect  | cut -d \> -f -29 | sed 's/$/>/ ; s/\/pic\//pic\//g' > /var/www/feed/conf/RATIO_TAG_SHAKAW.INF
+   # grep '<b>Ratio</b>' null_temp/web_shakaw_connect  | cut -d \> -f -29 | sed 's/$/>/ ; s/\/pic\//pic\//g' > /var/www/feed/conf/RATIO_TAG_SHAKAW.INF
     #-----------------------
 
 }
@@ -165,17 +170,17 @@ feed_check(){
             then
                 cp Database/database.db /var/www/feed/conf/Database/database.db
             fi
-            NAME_="$(grep "^$LINE_" Database/database.db | cut -d : -f 2)"
+            NAME_="$(grep "^$LINE_" Database/database.db | cut -d : -f 2 | cut -d \; -f -1)"
             #Nome do anime
 
             DB_RELEASE="$(grep "^$LINE_" Database/database.db | cut -d : -f 3)"
             #Database do anime
             
-            RELEASED="$(grep 'EXPECT_EPI' $DB_RELEASE | cut -d = -f 2 | cut -d \# -f -1)"
+            RELEASED="$(grep '^EXPECT_EPI=' $(echo Database/$DB_RELEASE | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
 
             
 
-            ID="$(grep '^ID=' $DB_RELEASE | cut -d = -f 2 | cut -d \# -f -1)"
+            ID="$(grep '^ID=' $(echo Database/$DB_RELEASE | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
             #ID a ser armazenado
 
         
@@ -231,10 +236,10 @@ feed_check(){
 
                     sleep 2
 
-                    cp $DB_RELEASE $DB_RELEASE~
+                    cp $(echo Database/$DB_RELEASE | sed 's/ //') $(echo Database/$DB_RELEASE | sed 's/ //')~
 
 
-                    cat $DB_RELEASE | sed "s/EXPECT_EPI=$RELEASED/EXPECT_EPI=$(($RELEASED+1))/g ; s/ID=$ID/ID=$(($ID+1))/g" > null_temp/TEMP_DB
+                    cat $(echo Database/$DB_RELEASE | sed 's/ //') | sed "s/EXPECT_EPI=$RELEASED/EXPECT_EPI=$(($RELEASED+1))/g ; s/ID=$ID/ID=$(($ID+1))/g" > null_temp/TEMP_DB
 
                     echo -ne "TOR>$(($ID)):DIA>$(date +%D):TIME>$TIME_FEED_CHECK:NAME>$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/$//')
 #-----------------------------------------------------\n" >> null_temp/TEMP_DB
@@ -245,7 +250,7 @@ feed_check(){
                         grep '^TOR' null_temp/TEMP_DB > /var/www/feed/conf/$DB_RELEASE
                     fi
 
-                    mv null_temp/TEMP_DB $DB_RELEASE
+                    mv null_temp/TEMP_DB $(echo Database/$DB_RELEASE | sed 's/ //')
                     RELEASED=$(($RELEASED+1))
                     ID=$(($ID +1))
                     UPDATE_FEED=$(($UPDATE_FEED+1))
@@ -298,21 +303,23 @@ automatic_bot(){
     function_file_var_mod "SLOW_BOT_END=" "$SLOW_BOT_END"
     function_file_var_mod "SLEEP_FLAG=" "ON"    
 
-    echo -e "\n-----------------------------------------------\n\n"
-    echo -e ".... Project KNiN : Feed ....\n"
-    echo -e ".... Bem Vindo - Blastin ....\n"
-    echo -e "Horário de Início : $date_time"
-    echo -e "\n"
-    echo -e "Database's Amount: $(grep '^[^#/]' Database/database.db | wc -l)\n"
-    echo -e "\n-----------------------------------------------\n\n"
+    if test "$1" != "--quiet"
+    then
+	    echo -e "\n-----------------------------------------------\n\n"
+	    echo -e ".... Project KNiN : Feed ....\n"
+	    echo -e ".... Bem Vindo - Blastin ....\n"
+	    echo -e "Horário de Início : $date_time"
+	    echo -e "\n"
+	    echo -e "Database's Amount: $(grep '^[^#/]' Database/database.db | wc -l)\n"
+	    echo -e "\n-----------------------------------------------\n\n"
 
-    echo -e "TIME UPDATE    : $TIME_UPDATE $TIME_NAME\n"
-    echo -e "SLOW CPU       : $SLOW_BOT_TIME_UPDATE $TIME_NAME [$SLOW_BOT_INIT:00 to $SLOW_BOT_END:00]\n"
-    echo -e "TRACKER_UPDATE : $TRACKER_UPDATE\n"
-    echo -e "COOKIE_UPDATE  : $COOKIE_UPDATE\n"
+	    echo -e "TIME UPDATE    : $TIME_UPDATE $TIME_NAME\n"
+	    echo -e "SLOW CPU       : $SLOW_BOT_TIME_UPDATE $TIME_NAME [$SLOW_BOT_INIT:00 to $SLOW_BOT_END:00]\n"
+	    echo -e "TRACKER_UPDATE : $TRACKER_UPDATE\n"
+	    echo -e "COOKIE_UPDATE  : $COOKIE_UPDATE\n"
 
-    echo -e "\n-----------------------------------------------\n\n"
-
+	    echo -e "\n-----------------------------------------------\n\n"
+    fi
 
     test "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END" && {
 
@@ -472,7 +479,7 @@ automatic_bot(){
 
                     wget --timeout=$TIME_OUT --limit-rate=15k -qO "null_temp/web_mdan_connect"  --load-cookies "cookie/mdan.cookie" "http://bt.mdan.org/index.php"
                     wget --timeout=$TIME_OUT --limit-rate=15k -qO "null_temp/web_omda_connect"  --load-cookies "cookie/omda.cookie" "http://bt.omda-fansubs.com/index.php"
-                    wget --timeout=$TIME_OUT --limit-rate=15k -qO "null_temp/web_shakaw_connect"  --load-cookies "cookie/shakaw.cookie" "http://tracker.shakaw.com.br/index.php"
+                    #wget --timeout=$TIME_OUT --limit-rate=15k -qO "null_temp/web_shakaw_connect"  --load-cookies "cookie/shakaw.cookie" "http://tracker.shakaw.com.br/index.php"
                     function_file_var_mod "BONUS_WHOLE=" "$(sed -n 85p null_temp/web_mdan_connect | cut -d \> -f 12 | sed 's/<\/a//')"
 
                     function_ratio_update
@@ -562,31 +569,32 @@ automatic_bot(){
 }
 
 
-if test "$1" = "--knin-automatic" 
-then
-    if test ! -f conf/file_var.script 
-    then
-         bash conf/init_file_var.sh
-    elif test ! $(cat conf/file_var.script | wc -l) 
-    then
-        bash conf/init_file_var.sh
-    fi
- 
-    if test "$2" = "-q" -o "$2" = "--quiet"
-    then
-        automatic_bot "--quiet"
-    elif test "$2" = "-v" -o "$2" = "--verbose"
-    then
-        automatic_bot "--verbose"
-    elif test "$2" = "-d" -o "$2" = "--debug"
-    then
-        automatic_bot "--debug"
-    fi
 
-elif test "$1" = "--knin-debug"
+if test ! -f conf/file_var.script  
 then
-    echo "init_bot obsoleto .. a implementar"
-
+ 	bash conf/init_file_var.sh
+elif test ! $(cat conf/file_var.script | wc -l) 
+then
+	bash conf/init_file_var.sh
 fi
+
+if test "$2" = "-q" -o "$1" = "--quiet"
+then
+	automatic_bot "--quiet"
+elif test "$2" = "-v" -o "$1" = "--verbose"
+then
+	automatic_bot "--verbose"
+elif test "$2" = "-d" -o "$1" = "--debug"
+then
+	automatic_bot "--debug"
+else
+	automatic_bot "--verbose"
+fi
+
+#elif test "$1" = "--knin-debug"
+#then
+#    echo "init_bot obsoleto .. a implementar"
+
+
 
 exit 0
