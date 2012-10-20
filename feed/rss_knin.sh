@@ -30,7 +30,9 @@
 #---------------:> Resolvido wget com save--cookie em tracker check
 #---------------:> init_bot retirado, versão obsoleta ....
 #------07/MAR/12:> Problema com condicional de fluxo  em linha 318
-#------18/OUT/12:> Atualização e limpeza
+#------19/OUT/12:>Atualização e limpeza :
+# Retirada  temporária(ou não ?) de OMDA E Shakaw tracker's;
+# Limpeza e atualização
 #test "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END"
 ##--------------:>Função function_ratio_update() criada ;
 # INFO        :
@@ -54,7 +56,7 @@ UPDATE_FEED=0
 SLOW_BOT_INIT=$(grep '^SLOW_BOT_INIT' conf/conf.script | cut -d = -f 2)
 SLOW_BOT_END=$(grep '^SLOW_BOT_END' conf/conf.script | cut -d = -f 2)
 
-TIME_OUT=$(grep '^TIME_OUT' conf/conf.script | cut -d = -f 2)
+#TIME_OUT=$(grep '^TIME_OUT' conf/conf.script | cut -d = -f 2)
 
 #########################################################
 
@@ -77,18 +79,18 @@ function_ratio_update(){
     #------------------------
 
     #-------------OMDA RATIO
-    LINE_INF_OMDA=$(grep -n '<font color=1900D1>Ratio:</font>' null_temp/web_omda_connect  | cut -d : -f 1)
+   # LINE_INF_OMDA=$(grep -n '<font color=1900D1>Ratio:</font>' null_temp/web_omda_connect  | cut -d : -f 1)
 
-    echo " " > /var/www/feed/conf/RATIO_TAG_OMDA.INF
+    #echo " " > /var/www/feed/conf/RATIO_TAG_OMDA.INF
 
-    for x in $(seq $LINE_INF_OMDA $(($LINE_INF_OMDA+5)))
-    do  
+    #for x in $(seq $LINE_INF_OMDA $(($LINE_INF_OMDA+5)))
+    #do  
 
-        test $x -ne 27 -a $x -ne 28 &&  
-        sed -n ${x}p null_temp/web_omda_connect >> /var/www/feed/conf/RATIO_TAG_OMDA.INF ||   
-        sed -n ${x}p null_temp/web_omda_connect | sed 's/\/pic\//pic\//g'  >> /var/www/feed/conf/RATIO_TAG_OMDA.INF
+     #   test $x -ne 27 -a $x -ne 28 &&  
+      #  sed -n ${x}p null_temp/web_omda_connect >> /var/www/feed/conf/RATIO_TAG_OMDA.INF ||   
+       # sed -n ${x}p null_temp/web_omda_connect | sed 's/\/pic\//pic\//g'  >> /var/www/feed/conf/RATIO_TAG_OMDA.INF
 
-    done
+    #done
     #-----------------------
 
     #-----------SHAKAW RATIO
@@ -112,8 +114,6 @@ init_cookie(){
             echo -ne "\033[0K"
             if [ "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END" ]
             then
-            
-            
                 echo -n "[NORM] UPDATE : [$UPDATE_FEED] | Enviando pedido para salvar cookie ...."
             else
                 echo -n "[SLOW] UPDATE : [$UPDATE_FEED] | Enviando pedido para salvar cookie ...."
@@ -121,9 +121,8 @@ init_cookie(){
         fi
         
 
-    wget --timeout=$TIME_OUT -qO  "null_temp/web_mdan_connect" --limit-rate=32k --save-cookies "cookie/mdan.cookie" --post-data 'username='$ACCOUNT'&password='$PASSWD'' "http://bt.mdan.org/takelogin.php"
-
-    wget --timeout=$TIME_OUT -qO "null_temp/web_omda_connect" --limit-rate=32k --save-cookies "cookie/omda.cookie" --post-data 'username='$ACCOUNT'&password='$PASSWD'' "http://bt.omda-fansubs.com/takelogin.php"
+    wget  -qO  "null_temp/web_mdan_connect" --limit-rate=32k --save-cookies "cookie/mdan.cookie" --post-data 'username='$ACCOUNT'&password='$PASSWD'' "http://bt.mdan.org/takelogin.php" #--timeout=$TIME_OUT mdan.cookie
+    #wget --timeout=$TIME_OUT -qO "null_temp/web_omda_connect" --limit-rate=32k --save-cookies "cookie/omda.cookie" --post-data 'username='$ACCOUNT'&password='$PASSWD'' "http://bt.omda-fansubs.com/takelogin.php"
 
     if [ "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END" ]
     then
@@ -133,7 +132,13 @@ init_cookie(){
         
     fi
     #conecta-se ao web site , gerando o arquivo cookie
-    test "$1" = "--verbose"  && echo -n "sucessed  >"
+    test "$1" = "--verbose"  && {
+
+	echo -ne '\033[G'
+	echo -ne "\033[11C"
+	echo -ne "\033[0K"
+	echo -n "sucessed  >"
+	}
 }
 
 feed_check(){
@@ -478,7 +483,7 @@ automatic_bot(){
                     function_file_var_mod "TRACKER_TIME=" "$(date -d "$TRACKER_UPDATE" +%H:%M:%S)"
 
                     wget --timeout=$TIME_OUT --limit-rate=15k -qO "null_temp/web_mdan_connect"  --load-cookies "cookie/mdan.cookie" "http://bt.mdan.org/index.php"
-                    wget --timeout=$TIME_OUT --limit-rate=15k -qO "null_temp/web_omda_connect"  --load-cookies "cookie/omda.cookie" "http://bt.omda-fansubs.com/index.php"
+                    #wget --timeout=$TIME_OUT --limit-rate=15k -qO "null_temp/web_omda_connect"  --load-cookies "cookie/omda.cookie" "http://bt.omda-fansubs.com/index.php"
                     #wget --timeout=$TIME_OUT --limit-rate=15k -qO "null_temp/web_shakaw_connect"  --load-cookies "cookie/shakaw.cookie" "http://tracker.shakaw.com.br/index.php"
                     function_file_var_mod "BONUS_WHOLE=" "$(sed -n 85p null_temp/web_mdan_connect | cut -d \> -f 12 | sed 's/<\/a//')"
 
