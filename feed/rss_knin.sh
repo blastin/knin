@@ -30,9 +30,6 @@
 #---------------:> Resolvido wget com save--cookie em tracker check
 #---------------:> init_bot retirado, versão obsoleta ....
 #------07/MAR/12:> Problema com condicional de fluxo  em linha 318
-#------19/OUT/12:>Atualização e limpeza :
-# Retirada  temporária(ou não ?) de OMDA E Shakaw tracker's;
-# Limpeza e atualização
 #test "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END"
 ##--------------:>Função function_ratio_update() criada ;
 # INFO        :
@@ -114,9 +111,9 @@ init_cookie(){
             echo -ne "\033[0K"
             if [ "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END" ]
             then
-                echo -n "[NORM] UPDATE : [$UPDATE_FEED] | Enviando pedido para salvar cookie ...."
+                echo -n "[NORM] UPDATE : [0] | Salvando cookie:   "
             else
-                echo -n "[SLOW] UPDATE : [$UPDATE_FEED] | Enviando pedido para salvar cookie ...."
+                echo -n "[SLOW] UPDATE : [0] | Salvando cookie:   "
             fi
         fi
         
@@ -132,13 +129,7 @@ init_cookie(){
         
     fi
     #conecta-se ao web site , gerando o arquivo cookie
-    test "$1" = "--verbose"  && {
-
-	echo -ne '\033[G'
-	echo -ne "\033[11C"
-	echo -ne "\033[0K"
-	echo -n "sucessed  >"
-	}
+    test "$1" = "--verbose"  && echo -n " [OK]"
 }
 
 feed_check(){
@@ -422,9 +413,7 @@ automatic_bot(){
         function_file_var_mod "TIME_UPDATE=" "$SLOW_BOT_TIME_UPDATE $TIME_NAME"
     fi
         
-    test "$1" = "--verbose" && echo -n 'Status : <                                                                             '
-
-
+    
     while :
     do
         
@@ -525,7 +514,7 @@ automatic_bot(){
                 echo -ne '\033[G'
                 echo -ne "\033[11C"
                 echo -ne '\033[0K'
-                echo -n "[NORM] UPDATE : [$UPDATE_FEED] | Next Update  : $(date -d "$TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)  >"
+                echo -n "[NORM] UPDATE : [$UPDATE_FEED] | Next Update  : $(date -d "$TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)"
             fi
             
              
@@ -539,7 +528,7 @@ automatic_bot(){
                 echo -ne '\033[G'
                 echo -ne "\033[11C"
                 echo -ne '\033[0K'
-                echo -n "[SLOW] UPDATE : [$UPDATE_FEED] | Next Update  : $(date -d "$TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)  >"
+                echo -n "[SLOW] UPDATE : [$UPDATE_FEED] | Next Update  : $(date -d "$TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)"
             fi
             #------------------------------------
             #Seguindo a regra de ser específicado  em conf/conf.script 
@@ -562,10 +551,10 @@ automatic_bot(){
             if [ "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END" ]
             then
 
-                echo -n "[NORM] UPDATE : [$UPDATE_FEED] | Init Update ....    >"
+                echo -n "[NORM] UPDATE : [$UPDATE_FEED] | Init Update ....    "
             else
 
-                echo -n "[SLOW] UPDATE : [$UPDATE_FEED] | Init Update ....    >"
+                echo -n "[SLOW] UPDATE : [$UPDATE_FEED] | Init Update ....    "
             fi
         fi
     done
