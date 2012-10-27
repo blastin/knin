@@ -1,27 +1,99 @@
-reset 
+#!/bin/bash
+#                                                     .__   __.  __  .__   __.  __  ___ 
+#                                                     |  \ |  | |  | |  \ |  | |  |/  / 
+#                                                     |   \|  | |  | |   \|  | |  '  /  
+#                                                     |  . `  | |  | |  . `  | |    <   
+#                                                     |  |\   | |  | |  |\   | |  .  \  
+#                                                     |__| \__| |__| |__| \__| |__|\__\' powered debian.
+#
+#                               Feed<rtorrent 0.9.3/0.13.3>
+# Project     : KNiN Feader
+# Autor       : BLASTiN
 
-rm -rf null_temp patch_feed conf/.backup/ cookie logs conf/file_var.script 
-mkdir null_temp conf/.backup/ patch_feed cookie logs
+# Versão  0.6.6 :> Versão em teste : CPU USAGE
+#----- 22/FEV/12:> FIX  algoritmo para retirar excesso de tempo em feed_check
+#---------------:> uso de sleep em feed_check pode ser usado normalmente
+#------29/FEV/12:> inserido caracteres de controle
+#---------------:> limpeza de código
+#---------------:> $1 in feed_check is a debug mode
+#---------------:> tempo diminuido para 7 minutos
+#---------------:> TESTANDO USO DE PROCESSO
+#------04/MAR/12:> Analisado problemas com TRACKER_UPDATE,TRACKER_TIME e SLEEP_TIME
+#---------------:> BONUS_WHOLE inserido em automatic_bot
+#---------------:> BUG diversos consertados
+#---------------:> limpeza e melhorando da syntax
+#---------------:> OMDA inserido 
+#------05/MAR/12:> Duas novas variavéis em linha 350 ~354
+#---------------:> Problemas são com horários em numeral 'OCT'
+#---------------:> Resolvido
+#------06/MAR/12:> Adicionado funções para retomada dos horários de TRACKER_TIME  e  COOKIE_TIME
+#---------------:> Resolvido wget com save--cookie em tracker check
+#---------------:> init_bot retirado, versão obsoleta ....
+#------07/MAR/12:> Problema com condicional de fluxo  em linha 318
+#test "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END"
+#---------------:>Função function_ratio_update() criada ;
+# Versão  1.0.0 :> Versão Beta 2
+#------26/OUT/12:> Atualização,limpeza  e novos códigos
+# INFO        :
+# -- -- [ "$1" -eq 1 ] : debug  < mod  echo -> stdout [screen] 
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-ACCOUNT=$(grep '^ACCOUNT' conf/conf.script | cut -d = -f 2)
-PASSWD=$(grep '^PASSWD'  conf/conf.script  | cut -d = -f 2)
+declare -r ACCOUNT=$(grep '^ACCOUNT' conf/conf.script | cut -d = -f 2)
+declare -r PASSWD=$(grep '^PASSWD'  conf/conf.script  | cut -d = -f 2)
+declare -r TIME_UPDATE=$(grep '^TIME_UPDATE' conf/conf.script | cut -d = -f 2)
+declare -r TIME_SYSTEM=$(grep '^TIME_SYSTEM' conf/conf.script | cut -d = -f 2)
+declare -r TIME_NAME=$(grep '^TIME_NAME' conf/conf.script | cut -d = -f 2)
+
+
 date_time=$(date +%H:%M:%S)
 UPDATE_FEED=0
 
-SLOW_BOT_INIT=$(grep '^SLOW_BOT_INIT' conf/conf.script | cut -d = -f 2)
-SLOW_BOT_END=$(grep '^SLOW_BOT_END' conf/conf.script | cut -d = -f 2)
+SLOW_BOT=(-1)
+SLOW_BOT_COUNT=0
+TRACKER_TIME_FLAG=1
+TIME_UPDATE_NEXT_BEFORE_FEED_CHECK=0
+TIME_UPDATE_NEXT_BEFORE_SLEEP=0
+BUFF_TIME_EXCESS=0
 
 
-function_file_var_mod()
-{
-    [ "$1" -a "$2" ] && {
-        cp conf/file_var.script conf/.backup/.file_var.script.backup
 
-        cat conf/file_var.script | sed "s/^$1.*/$1$2/g" > conf/file_var.script    
- 
-    }
+SLOW_BOT_TIME_UPDATE=$(grep '^SLOW_BOT_TIME_UPDATE' conf/conf.script | cut -d = -f 2)
+
+TRACKER_UPDATE=$(grep '^TRACKER_UPDATE' conf/conf.script | cut -d = -f 2)
+
+init(){
+	reset 
+
+	rm -rf null_temp patch_feed conf/.backup/ cookie logs
+	mkdir null_temp conf/.backup/ patch_feed cookie logs
+
+	local VAR_TEMP=" "
+
+	while :
+	do
+		VAR_TEMP="$(grep "^SLOW_BOT=" conf/conf.script  | cut -d = -f 2 | cut -d : -f "$(($SLOW_BOT_COUNT+1))" )"
+	
+		if test -n  "$VAR_TEMP"
+		then		
+			SLOW_BOT[$SLOW_BOT_COUNT]="$VAR_TEMP"
+			SLOW_BOT_COUNT=$(($SLOW_BOT_COUNT+1))
+		else
+			break
+		fi
+	done
+
 }
 
+slow_bot_check(){
+
+	for LINE_ in $(seq ${#SLOW_BOT})
+	do
+		test "$(date '+%H')" -eq "${SLOW_BOT["$LINE_"]}" && return 0
+	done
+
+	return 1
+
+}
 
 init_cookie(){ 
 
@@ -36,7 +108,7 @@ init_cookie(){
             echo -ne '\033[G'
             echo -ne "\033[11C"
             echo -ne "\033[0K"
-            if [ "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END" ]
+            if [ -z slow_bot_check ]
             then
                 echo -n "[NORM] UPDATE : [0] | Salvando cookie:   "
             else
@@ -45,7 +117,7 @@ init_cookie(){
         fi
         
 
-    wget  -qO  "null_temp/web_mdan_connect" --limit-rate=32k --save-cookies "cookie/mdan.cookie" --post-data 'username='$ACCOUNT'&password='$PASSWD'' "http://bt.mdan.org/takelogin.php"
+    	wget  -qO  "null_temp/web_mdan_connect" --limit-rate=32k --save-cookies "cookie/mdan.cookie" --post-data 'username='$ACCOUNT'&password='$PASSWD'' "http://bt.mdan.org/takelogin.php"
 
     #conecta-se ao web site , gerando o arquivo cookie
     test "$1" = "--verbose"  && echo -n " [OK]"
@@ -76,7 +148,7 @@ feed_check(){
 
     for LINE_ in $(seq $(grep '^[^#/]' Database/database.db | wc -l))
          do 
-            if [ "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END" ]
+            if [  -n slow_bot_check ]
             then
                 cp Database/database.db /var/www/feed/conf/Database/database.db
             fi
@@ -115,7 +187,7 @@ feed_check(){
                         echo -ne "\033[11C"
                         echo -ne '\033[0K'
 
-                        if [ "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END" ]
+                        if [ -n slow_bot_check ]
                         then
                             echo -n "[NORM] UPDATE : [$UPDATE_FEED] | Feed encontrado : $(cat null_temp/LINK_TOR | cut -d = -f 3)"
                         else
@@ -154,7 +226,7 @@ feed_check(){
                     echo -ne "TOR>$(($ID)):DIA>$(date +%D):TIME>$TIME_FEED_CHECK:NAME>$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/$//')
 #-----------------------------------------------------\n" >> null_temp/TEMP_DB
 
-                    if [ "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END" ]
+                    if [  -n slow_bot_check ]
                     then
                         sleep 2
                         grep '^TOR' null_temp/TEMP_DB > /var/www/feed/conf/$DB_RELEASE
@@ -191,23 +263,6 @@ feed_check(){
 
 automatic_bot(){
 
-    #
-    TRACKER_TIME_FLAG=1
-    #
-
-    TIME_UPDATE_NEXT_BEFORE_FEED_CHECK=0
-    TIME_UPDATE_NEXT_BEFORE_SLEEP=0
-    BUFF_TIME_EXCESS=0
-
-    TIME_UPDATE=$(grep '^TIME_UPDATE' conf/conf.script | cut -d = -f 2)
-    TIME_SYSTEM=$(grep '^TIME_SYSTEM' conf/conf.script | cut -d = -f 2)
-    TIME_NAME=$(grep '^TIME_NAME' conf/conf.script | cut -d = -f 2)
-
-    SLOW_BOT_TIME_UPDATE=$(grep '^SLOW_BOT_TIME_UPDATE' conf/conf.script | cut -d = -f 2)
-
-    TRACKER_UPDATE=$(grep '^TRACKER_UPDATE' conf/conf.script | cut -d = -f 2)
-
-    
     if test "$1" != "--quiet"
     then
 	    echo -e "\n-----------------------------------------------\n\n"
@@ -228,19 +283,9 @@ automatic_bot(){
 
     init_cookie "$1"
 
-    function_file_var_mod "DAY=" "$(date '+%d')"
-
     while :
     do
 
-	#$if test "$(date '+%H')" -eq "00" -a "$DAY_UNLOCK" -eq 1
-	#then
-	#	function_file_var_mod "DAY=" "$(date -d '1 days' +'%d')"
-	#	DAY_UNLOCK=0
-	#else
-	#	DAY_UNLOCK=1
-	#fi
- 
 	feed_check "$1"
 
         TIME_UPDATE_NEXT_BEFORE_FEED_CHECK=$(date +%s)
@@ -254,10 +299,8 @@ automatic_bot(){
         #--------------------------------------------------------------------------------------
 
         
-        if [ "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END" ]
+        if [ -n slow_bot_check ]
         then 
-
-            
 
             if test "$1" = "--verbose"
             then
@@ -298,7 +341,7 @@ automatic_bot(){
             echo -ne "\033[11C"
             echo -ne '\033[0K'
         
-            if [ "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END" ]
+            if [ -n slow_bot_check ]
             then
 
                 echo -n "[NORM] UPDATE : [$UPDATE_FEED] | Init Update ....    "
@@ -312,7 +355,8 @@ automatic_bot(){
 }
 
 ################### INICIALIZAÇÃO #################
-bash conf/init_file_var_beta2.sh
+
+init
 
 if test "$2" = "-q" -o "$1" = "--quiet"
 then
