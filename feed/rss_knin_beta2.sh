@@ -324,7 +324,7 @@ automatic_bot(){
                 echo -ne '\033[G'
                 echo -ne "\033[11C"
                 echo -ne '\033[0K'
-                echo -n "[SLOW] UPDATE : [$UPDATE_FEED] | Next Update  : $(date -d "$TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)"
+                echo -n "[SLOW] UPDATE : [$UPDATE_FEED] | Next Update  : $(date -d "$SLOW_BOT_TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)"
             fi
             #------------------------------------
             #Seguindo a regra de ser específicado  em conf/conf.script 
