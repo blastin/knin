@@ -68,27 +68,29 @@ init(){
 	mkdir null_temp conf/.backup/ patch_feed cookie logs
 
 	local VAR_TEMP=" "
+	local SLOW_BOT_CONF_SCRIPT="$(grep "^SLOW_BOT=" conf/conf.script | cut -d = -f 2)"
 
 	while :
 	do
-		VAR_TEMP="$(grep "^SLOW_BOT=" conf/conf.script  | cut -d = -f 2 | cut -d : -f "$(($SLOW_BOT_COUNT+1))" )"
+		VAR_TEMP="$(echo $SLOW_BOT_CONF_SCRIPT | cut -d : -f "$(($SLOW_BOT_COUNT+1))")"
 	
 		if test -n  "$VAR_TEMP"
 		then		
-			SLOW_BOT[$SLOW_BOT_COUNT]="$VAR_TEMP"
+			SLOW_BOT["$SLOW_BOT_COUNT"]="$VAR_TEMP"
 			SLOW_BOT_COUNT=$(($SLOW_BOT_COUNT+1))
 		else
 			break
 		fi
 	done
+	#
 
 }
 
 slow_bot_check(){
 
-	for LINE_ in $(seq ${#SLOW_BOT})
+	for LINE_ in $(seq ${#SLOW_BOT[*]})
 	do
-		test "$(date '+%H')" -eq "${SLOW_BOT["$LINE_"]}" && return 0
+		test "$(date '+%H')" -eq "${SLOW_BOT["$(($LINE_-1))"]}" && return 0
 	done
 
 	return 1
@@ -108,7 +110,7 @@ init_cookie(){
             echo -ne '\033[G'
             echo -ne "\033[11C"
             echo -ne "\033[0K"
-            if [ -z slow_bot_check ]
+            slow_bot_check; if test $? -eq 1
             then
                 echo -n "[NORM] UPDATE : [0] | Salvando cookie:   "
             else
@@ -119,8 +121,8 @@ init_cookie(){
 
     	wget  -qO  "null_temp/web_mdan_connect" --limit-rate=32k --save-cookies "cookie/mdan.cookie" --post-data 'username='$ACCOUNT'&password='$PASSWD'' "http://bt.mdan.org/takelogin.php"
 
-    #conecta-se ao web site , gerando o arquivo cookie
-    test "$1" = "--verbose"  && echo -n " [OK]"
+	#conecta-se ao web site , gerando o arquivo cookie
+	test "$1" = "--verbose"  && echo -n " [OK]"
 }
 
 feed_check(){
@@ -132,11 +134,12 @@ feed_check(){
 
     
 
-    test "$1" = "--debug"  && {
+    if test "$1" = "--debug"
+    then
         echo -e "-----------------------------------------------\n\n"
         echo -e "Filtrando feed.xml .......\n"
         echo -e "-----------------------------------------------\n\n"
-        }
+    fi
     #feed.xml contém a última atualização do feed.
     TIME_FEED_CHECK=$(date +%H:%M:%S)
 
@@ -148,10 +151,7 @@ feed_check(){
 
     for LINE_ in $(seq $(grep '^[^#/]' Database/database.db | wc -l))
          do 
-            if [  -n slow_bot_check ]
-            then
-                cp Database/database.db /var/www/feed/conf/Database/database.db
-            fi
+           
             NAME_="$(grep "^$LINE_" Database/database.db | cut -d : -f 2 | cut -d \; -f -1)"
             #Nome do anime
 
@@ -175,19 +175,19 @@ feed_check(){
 
                 grep "$NAME_.\($RELEASED\|$RELEASED_OCT\)" null_temp/LINK_RELEASE > null_temp/LINK_TOR
 
-                test "$1" = "--debug"  &&  { 
-                    echo -ne "Verificando nova atualização ..."
-                }
+                test "$1" = "--debug"  && echo -ne "Verificando nova atualização ..."
 
-                [ "$(cat null_temp/LINK_TOR)" ] && 
-                {
+                if test  "$(cat null_temp/LINK_TOR)"
+
+                then
+
                     if test "$1" = "--verbose"
                     then
                         echo -ne '\033[G'
                         echo -ne "\033[11C"
                         echo -ne '\033[0K'
 
-                        if [ -n slow_bot_check ]
+                        slow_bot_check; if test $? -eq 1
                         then
                             echo -n "[NORM] UPDATE : [$UPDATE_FEED] | Feed encontrado : $(cat null_temp/LINK_TOR | cut -d = -f 3)"
                         else
@@ -195,7 +195,8 @@ feed_check(){
                         fi
                     fi
                     
-                    test "$1" = "--debug"  && {
+                    if test "$1" = "--debug"
+		    then
                          echo -ne "sucessed!\n"
                          echo -e "-----------------------------------------------\n"
                          echo -e "[UPDATE]----------------K-N-i-N----------------[NEW]"
@@ -205,7 +206,7 @@ feed_check(){
                          echo -ne "Time : $TIME_FEED_CHECK\n"
                          echo -ne "Iniciando Download .."
                          sleep 4
-                    }
+                    fi
 
                     
                 
@@ -226,20 +227,15 @@ feed_check(){
                     echo -ne "TOR>$(($ID)):DIA>$(date +%D):TIME>$TIME_FEED_CHECK:NAME>$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/$//')
 #-----------------------------------------------------\n" >> null_temp/TEMP_DB
 
-                    if [  -n slow_bot_check ]
-                    then
-                        sleep 2
-                        grep '^TOR' null_temp/TEMP_DB > /var/www/feed/conf/$DB_RELEASE
-                    fi
-
                     mv null_temp/TEMP_DB $(echo Database/$DB_RELEASE | sed 's/ //')
                     RELEASED=$(($RELEASED+1))
                     ID=$(($ID +1))
                     UPDATE_FEED=$(($UPDATE_FEED+1))
 
-                }  || #[ "$(cat null_temp/LINK_TOR)" ] && 
-                {
-                    test "$1" = "--debug"  && { 
+                else #[ "$(cat null_temp/LINK_TOR)" ] && 
+                
+                    if test "$1" = "--debug"
+		    then 
                         echo -ne "nada novo ..!\n"
                         echo -e "-----------------------------------------------\n\n"
                         echo -e "[UPDATE]----------------K-N-i-N----------------[NOTHING]"
@@ -248,11 +244,11 @@ feed_check(){
                         echo -ne "Horário de checagem: $TIME_FEED_CHECK\n"
                         echo -e "[UPDATE]----------------K-N-i-N----------------[NOTHING]\n\n"
                         sleep 4
-                    }
+                    fi
 
                     break # While
         
-                }
+                fi
     
         
         done #while :
@@ -273,9 +269,16 @@ automatic_bot(){
 	    echo -e "Database's Quantidade: $(grep '^[^#/]' Database/database.db | wc -l)\n"
 	    echo -e "\n-----------------------------------------------\n\n"
 
-	    echo -e "TIME UPDATE    : $TIME_UPDATE $TIME_NAME\n"
-	    echo -e "SLOW CPU       : $SLOW_BOT_TIME_UPDATE $TIME_NAME [$SLOW_BOT_INIT:00 to $SLOW_BOT_END:00]\n"
-	    echo -e "TRACKER_UPDATE : $TRACKER_UPDATE\n"
+	    echo -e "TIME UPDATE NORMAL: $TIME_UPDATE $TIME_NAME\n"
+            echo -e "TIME UPDATE SLOW  : $SLOW_BOT_TIME_UPDATE $TIME_NAME\n"
+	    echo -ne "SLOW CPU          : "
+	    for LINE_ in $(seq ${#SLOW_BOT[*]})
+	    do
+	    	echo -ne "(${SLOW_BOT["$(($LINE_-1))"]}:00) " 
+	    done
+
+            echo -e "\n"
+	    echo -e "TRACKER_UPDATE    : $TRACKER_UPDATE\n"
 
 
 	    echo -e "\n-----------------------------------------------\n\n"
@@ -299,7 +302,7 @@ automatic_bot(){
         #--------------------------------------------------------------------------------------
 
         
-        if [ -n slow_bot_check ]
+        slow_bot_check; if test $? -eq 1
         then 
 
             if test "$1" = "--verbose"
@@ -341,7 +344,7 @@ automatic_bot(){
             echo -ne "\033[11C"
             echo -ne '\033[0K'
         
-            if [ -n slow_bot_check ]
+            slow_bot_check; if test $? -eq 1
             then
 
                 echo -n "[NORM] UPDATE : [$UPDATE_FEED] | Init Update ....    "
@@ -357,6 +360,7 @@ automatic_bot(){
 ################### INICIALIZAÇÃO #################
 
 init
+
 
 if test "$2" = "-q" -o "$1" = "--quiet"
 then
