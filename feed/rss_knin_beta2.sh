@@ -24,7 +24,7 @@
 #---------------:> limpeza e melhorando da syntax
 #---------------:> OMDA inserido 
 #------05/MAR/12:> Duas novas variavéis em linha 350 ~354
-#---------------:> Problemas são com horários em numeral 'OCT'
+#---------------:> Problemas está com horários em numeral 'OCT'
 #---------------:> Resolvido
 #------06/MAR/12:> Adicionado funções para retomada dos horários de TRACKER_TIME  e  COOKIE_TIME
 #---------------:> Resolvido wget com save--cookie em tracker check
@@ -33,7 +33,8 @@
 #test "$(date '+%H')" -lt "$SLOW_BOT_INIT" -o "$(date '+%H')" -ge "$SLOW_BOT_END"
 #---------------:>Função function_ratio_update() criada ;
 # Versão  1.0.0 :> Versão Beta 2
-#------26/OUT/12:> Atualização,limpeza  e novos códigos
+#------26/OUT/12:> Atualização,limpeza e novos códigos
+#------31/OUT/12:> Adicionado SLOW_BOT_TIME_UPDATE à dias específicos.
 # INFO        :
 # -- -- [ "$1" -eq 1 ] : debug  < mod  echo -> stdout [screen] 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,13 +44,15 @@ declare -r PASSWD=$(grep '^PASSWD'  conf/conf.script  | cut -d = -f 2)
 declare -r TIME_UPDATE=$(grep '^TIME_UPDATE' conf/conf.script | cut -d = -f 2)
 declare -r TIME_SYSTEM=$(grep '^TIME_SYSTEM' conf/conf.script | cut -d = -f 2)
 declare -r TIME_NAME=$(grep '^TIME_NAME' conf/conf.script | cut -d = -f 2)
+declare -r SLOW_BOT_TIME_UPDATE=$(grep '^SLOW_BOT_TIME_UPDATE' conf/conf.script | cut -d = -f 2)
+declare -r TRACKER_UPDATE=$(grep '^TRACKER_UPDATE' conf/conf.script | cut -d = -f 2)
 
 
 date_time=$(date +%H:%M:%S)
 UPDATE_FEED=0
-
 SLOW_BOT=(-1)
-SLOW_BOT_COUNT=0
+SLOW_BOT_DAY=(-1)
+
 TRACKER_TIME_FLAG=1
 TIME_UPDATE_NEXT_BEFORE_FEED_CHECK=0
 TIME_UPDATE_NEXT_BEFORE_SLEEP=0
@@ -57,27 +60,47 @@ BUFF_TIME_EXCESS=0
 
 
 
-SLOW_BOT_TIME_UPDATE=$(grep '^SLOW_BOT_TIME_UPDATE' conf/conf.script | cut -d = -f 2)
 
-TRACKER_UPDATE=$(grep '^TRACKER_UPDATE' conf/conf.script | cut -d = -f 2)
 
 init(){
 	reset 
 
 	rm -rf null_temp patch_feed conf/.backup/ cookie logs
 	mkdir null_temp conf/.backup/ patch_feed cookie logs
-
+	local FLAG_VAR_TEMP=0
+	local FLAG_VAR_TEMP_DAY=0
 	local VAR_TEMP=" "
+	local VAR_TEMP_DAY=" "
 	local SLOW_BOT_CONF_SCRIPT="$(grep "^SLOW_BOT=" conf/conf.script | cut -d = -f 2)"
+	local SLOW_BOT_DAY_CONF_SCRIPT="$(grep "^SLOW_BOT_DAY=" conf/conf.script | cut -d = -f 2)"
+	local SLOW_BOT_COUNT=0
+	local SLOW_BOT_COUNT_DAY=0
 
 	while :
 	do
 		VAR_TEMP="$(echo $SLOW_BOT_CONF_SCRIPT | cut -d : -f "$(($SLOW_BOT_COUNT+1))")"
-	
+		
+
 		if test -n  "$VAR_TEMP"
 		then		
 			SLOW_BOT["$SLOW_BOT_COUNT"]="$VAR_TEMP"
 			SLOW_BOT_COUNT=$(($SLOW_BOT_COUNT+1))
+		
+		else
+			break
+		fi
+
+	done
+
+	while :
+	do
+		VAR_TEMP_DAY="$(echo $SLOW_BOT_DAY_CONF_SCRIPT | cut -d : -f "$(($SLOW_BOT_COUNT_DAY+1))")"
+
+		if test -n "$VAR_TEMP_DAY"
+		then
+			SLOW_BOT_DAY["$SLOW_BOT_COUNT_DAY"]="$VAR_TEMP_DAY"
+			SLOW_BOT_COUNT_DAY=$(($SLOW_BOT_COUNT_DAY+1))
+			
 		else
 			break
 		fi
@@ -88,11 +111,22 @@ init(){
 
 slow_bot_check(){
 
-	for LINE_ in $(seq ${#SLOW_BOT[*]})
-	do
-		test "$(date '+%H')" -eq "${SLOW_BOT["$(($LINE_-1))"]}" && return 0
-	done
+	if test -n "${#SLOW_BOT_DAY[*]}"
+	then
+		for LINE_ in $(seq ${#SLOW_BOT_DAY[*]})
+		do
+			test "$(date '+%a')" = "${SLOW_BOT_DAY["$(($LINE_-1))"]}" -o "$(date '+%A')" = "${SLOW_BOT_DAY["$(($LINE_-1))"]}"  && return 0
+		done
+	fi
 
+	if test -n "${#SLOW_BOT[*]}"
+	then
+		for LINE_ in $(seq ${#SLOW_BOT[*]})
+		do
+			test "$(date '+%H')" -eq "${SLOW_BOT["$(($LINE_-1))"]}" && return 0
+		done
+	fi
+	
 	return 1
 
 }
@@ -128,11 +162,17 @@ init_cookie(){
 feed_check(){
 
     #----------------------------------------------------------------------------------------------------------------
-    #FIXME : utilizar sistema avançado WGET para apenas checagem, economia de processo
     wget -qO "patch_feed/feed.xml" --limit-rate=10k --load-cookies "cookie/mdan.cookie" "http://bt.mdan.org/rss.php?feedtype=download&timezone=-3&showrows=10&categories=1"
     #----------------------------------------------------------------------------------------------------------------
 
-    
+   #if [[ "$(curl http://bt.mdan.org/rss.php?feedtype=download&timezone=-3&showrows=10&categories=1 -z patch_feed/feed.xml -o patch_feed/feed_check.xml -s -L -w %{http_code})" == "200" ]]
+ # then
+        # code here to process index.html because 200 means it gets updated
+	#mv feed_check.xml feed.xml
+ # else
+	#return 1
+ # fi
+
 
     if test "$1" = "--debug"
     then
@@ -261,26 +301,25 @@ automatic_bot(){
 
     if test "$1" != "--quiet"
     then
-	    echo -e "\n-----------------------------------------------\n\n"
 	    echo -e ".... Project KNiN : Feed ....\n"
 	    echo -e ".... Bem Vindo - Blastin ....\n"
 	    echo -e "Horário de Início : $date_time"
 	    echo -e "\n"
 	    echo -e "Database's Quantidade: $(grep '^[^#/]' Database/database.db | wc -l)\n"
 	    echo -e "\n-----------------------------------------------\n\n"
-
 	    echo -e "TIME UPDATE NORMAL: $TIME_UPDATE $TIME_NAME\n"
             echo -e "TIME UPDATE SLOW  : $SLOW_BOT_TIME_UPDATE $TIME_NAME\n"
 	    echo -ne "SLOW CPU          : "
 	    for LINE_ in $(seq ${#SLOW_BOT[*]})
 	    do
-	    	echo -ne "(${SLOW_BOT["$(($LINE_-1))"]}:00) " 
+	    	echo -ne "(${SLOW_BOT["$(($LINE_-1))"]}:00)" 
 	    done
-
-            echo -e "\n"
-	    echo -e "TRACKER_UPDATE    : $TRACKER_UPDATE\n"
-
-
+	    echo -e "\n"
+	    echo -ne "SLOW CPU DAY      : "
+	    for LINE_ in $(seq ${#SLOW_BOT_DAY[*]})
+	    do
+	    	echo -ne "(${SLOW_BOT_DAY["$(($LINE_-1))"]})" 
+	    done
 	    echo -e "\n-----------------------------------------------\n\n"
     fi
 
