@@ -35,6 +35,7 @@
 # Versão  1.0.0 :> Versão Beta 2
 #------26/OUT/12:> Atualização,limpeza e novos códigos
 #------31/OUT/12:> Adicionado SLOW_BOT_TIME_UPDATE à dias específicos.
+#------04/NOV/12:> Adicionado função para torrent do one piece project.
 # INFO        :
 # -- -- [ "$1" -eq 1 ] : debug  < mod  echo -> stdout [screen] 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,10 +46,9 @@ declare -r TIME_UPDATE=$(grep '^TIME_UPDATE' conf/conf.script | cut -d = -f 2)
 declare -r TIME_SYSTEM=$(grep '^TIME_SYSTEM' conf/conf.script | cut -d = -f 2)
 declare -r TIME_NAME=$(grep '^TIME_NAME' conf/conf.script | cut -d = -f 2)
 declare -r SLOW_BOT_TIME_UPDATE=$(grep '^SLOW_BOT_TIME_UPDATE' conf/conf.script | cut -d = -f 2)
-declare -r TRACKER_UPDATE=$(grep '^TRACKER_UPDATE' conf/conf.script | cut -d = -f 2)
+declare -r date_time=$(date +%H:%M:%S)
+declare -r headstatus_ok=200
 
-
-date_time=$(date +%H:%M:%S)
 UPDATE_FEED=0
 SLOW_BOT=(-1)
 SLOW_BOT_DAY=(-1)
@@ -58,8 +58,8 @@ TIME_UPDATE_NEXT_BEFORE_FEED_CHECK=0
 TIME_UPDATE_NEXT_BEFORE_SLEEP=0
 BUFF_TIME_EXCESS=0
 
-
-
+EP_ONEPIECE="$(grep '^EXPECT_EPI=' $(echo Database/database_one_piece.db | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
+ID_ONEPIECE="$(grep '^ID=' $(echo Database/database_one_piece.db | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
 
 
 init(){
@@ -71,10 +71,11 @@ init(){
 	local FLAG_VAR_TEMP_DAY=0
 	local VAR_TEMP=" "
 	local VAR_TEMP_DAY=" "
-	local SLOW_BOT_CONF_SCRIPT="$(grep "^SLOW_BOT=" conf/conf.script | cut -d = -f 2)"
-	local SLOW_BOT_DAY_CONF_SCRIPT="$(grep "^SLOW_BOT_DAY=" conf/conf.script | cut -d = -f 2)"
+	local SLOW_BOT_CONF_SCRIPT="$(grep "^SLOW_BOT=" conf/conf.script | cut -d = -f 2 | cut -d \# -f 1)"
+	local SLOW_BOT_DAY_CONF_SCRIPT="$(grep "^SLOW_BOT_DAY=" conf/conf.script | cut -d = -f 2 | cut -d \# -f 1)"
 	local SLOW_BOT_COUNT=0
 	local SLOW_BOT_COUNT_DAY=0
+
 
 	while :
 	do
@@ -106,6 +107,53 @@ init(){
 		fi
 	done
 	#
+
+}
+
+one_piece(){
+
+	date_today="$(date '+%a')"
+	
+	case $date_today in
+
+	"Dom" )
+		if test "$(date '+%H')" -ge 09
+		then
+			local TIME_FEED_CHECK=$(date +%H:%M:%S)
+			local status=$(curl -s --head http://onepiece.xpg.com.br/torrent/piecePROJECT_-_Epi_"$EP_ONEPIECE"_HD.mkv.torrent | head -n 1 | cut -d ' ' -f 2)
+	
+			if test $status -eq $headstatus_ok
+			then
+				if test "$1" = "--verbose"
+					then
+						echo -ne '\033[G'
+						echo -ne "\033[11C"
+						echo -ne '\033[0K'
+
+						slow_bot_check; if test $? -eq 1
+						then
+		    					echo -n "[NORM] UPDATE : [$UPDATE_FEED] | Feed encontrado : piecePROJECT-Epi."$EP_ONEPIECE".HD.mkv"
+						else
+		    					echo -n "[SLOW] UPDATE : [$UPDATE_FEED] | Feed encontrado : piecePROJECT-Epi."$EP_ONEPIECE".HD.mkv"
+						fi
+				fi
+
+
+				curl --silent -o  "rtorrent_watch/piecePROJECT_-_Epi_"$EP_ONEPIECE"_HD.mkv.torrent" http://onepiece.xpg.com.br/torrent/piecePROJECT_-_Epi_"$EP_ONEPIECE"_HD.mkv.torrent
+
+				cat Database/database_one_piece.db | sed "s/EXPECT_EPI=$EP_ONEPIECE/EXPECT_EPI=$(($EP_ONEPIECE+1))/g ; s/ID=$ID_ONEPIECE/ID=$(($ID_ONEPIECE+1))/g" > null_temp/TEMP_DB
+				echo -ne "TOR>$(($ID_ONEPIECE)):DIA>$(date +%D):TIME>$TIME_FEED_CHECK:NAME>piecePROJECT_-_Epi_"$EP_ONEPIECE"_HD.mkv.torrent
+#-----------------------------------------------------\n" >> null_temp/TEMP_DB
+
+				mv null_temp/TEMP_DB Database/database_one_piece.db
+
+				UPDATE_FEED=$(($UPDATE_FEED +1))	
+				EP_ONEPIECE=$(($EP_ONEPIECE +1))
+				ID_ONEPIECE=$(($ID_ONEPIECE +1))
+			fi
+		fi
+		;;
+	esac
 
 }
 
@@ -153,7 +201,9 @@ init_cookie(){
         fi
         
 
-    	wget  -qO  "null_temp/web_mdan_connect" --limit-rate=32k --save-cookies "cookie/mdan.cookie" --post-data 'username='$ACCOUNT'&password='$PASSWD'' "http://bt.mdan.org/takelogin.php"
+    	#wget  -qO  "null_temp/web_mdan_connect" --limit-rate=32k --save-cookies "cookie/mdan.cookie" --post-data 'username='$ACCOUNT'&password='$PASSWD'' "http://bt.mdan.org/takelogin.php" 
+
+	curl  --silent -o "null_temp/web_mdan_connect" --limit-rate 32k --cookie-jar "cookie/mdan.cookie" --data 'username=blastin&password=112256dnbonline' "http://bt.mdan.org/takelogin.php" 
 
 	#conecta-se ao web site , gerando o arquivo cookie
 	test "$1" = "--verbose"  && echo -n " [OK]"
@@ -162,7 +212,9 @@ init_cookie(){
 feed_check(){
 
     #----------------------------------------------------------------------------------------------------------------
-    wget -qO "patch_feed/feed.xml" --limit-rate=10k --load-cookies "cookie/mdan.cookie" "http://bt.mdan.org/rss.php?feedtype=download&timezone=-3&showrows=10&categories=1"
+    #wget -qO "patch_feed/feed.xml" --limit-rate=10k --load-cookies "cookie/mdan.cookie" "http://bt.mdan.org/rss.php?feedtype=download&timezone=-3&showrows=10&categories=1"
+
+    curl --silent -o "patch_feed/feed.xml" --limit-rate 10k --cookie "cookie/mdan.cookie" "http://bt.mdan.org/rss.php?feedtype=download&timezone=-3&showrows=10&categories=1"
     #----------------------------------------------------------------------------------------------------------------
 
    #if [[ "$(curl http://bt.mdan.org/rss.php?feedtype=download&timezone=-3&showrows=10&categories=1 -z patch_feed/feed.xml -o patch_feed/feed_check.xml -s -L -w %{http_code})" == "200" ]]
@@ -247,10 +299,9 @@ feed_check(){
                          echo -ne "Iniciando Download .."
                          sleep 4
                     fi
-
-                    
                 
-                    wget --limit-rate=25k --load-cookies "cookie/mdan.cookie" -O "rtorrent_watch/$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')"   -o logs/logfile -i null_temp/LINK_TOR
+                    #wget --limit-rate=25k --load-cookies "cookie/mdan.cookie" -O "rtorrent_watch/$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')"   -o logs/logfile -i null_temp/LINK_TOR
+		    curl --silent --limit-rate 32k --cookie "cookie/mdan.cookie" -o "rtorrent_watch/$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')" "$(cat null_temp/LINK_TOR)"
                 
                     test "$1" = "--debug"  && { 
                         echo -ne "completado!\n"
@@ -328,8 +379,9 @@ automatic_bot(){
     while :
     do
 
+	one_piece "$1"
 	feed_check "$1"
-
+	
         TIME_UPDATE_NEXT_BEFORE_FEED_CHECK=$(date +%s)
         
         #--------------------------------------------------------------------------------------
