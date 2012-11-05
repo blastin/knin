@@ -36,6 +36,7 @@
 #------26/OUT/12:> Atualização,limpeza e novos códigos
 #------31/OUT/12:> Adicionado SLOW_BOT_TIME_UPDATE à dias específicos.
 #------04/NOV/12:> Adicionado função para torrent do one piece project.
+#------05/NOV/12:> Inserido checagem de modificação em feed com diff
 # INFO        :
 # -- -- [ "$1" -eq 1 ] : debug  < mod  echo -> stdout [screen] 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,7 +49,7 @@ declare -r TIME_NAME=$(grep '^TIME_NAME' conf/conf.script | cut -d = -f 2)
 declare -r SLOW_BOT_TIME_UPDATE=$(grep '^SLOW_BOT_TIME_UPDATE' conf/conf.script | cut -d = -f 2)
 declare -r date_time=$(date +%H:%M:%S)
 declare -r headstatus_ok=200
-
+declare -r feed_lenght_min=4 #valor minímo para checagem em diff
 UPDATE_FEED=0
 SLOW_BOT=(-1)
 SLOW_BOT_DAY=(-1)
@@ -63,10 +64,11 @@ ID_ONEPIECE="$(grep '^ID=' $(echo Database/database_one_piece.db | sed 's/ //') 
 
 
 init(){
-	reset 
-
-	rm -rf null_temp patch_feed conf/.backup/ cookie logs
-	mkdir null_temp conf/.backup/ patch_feed cookie logs
+	reset
+ 
+	test -d patch_feed || mkdir patch_feed
+	rm -rf null_temp conf/.backup/ cookie logs
+	mkdir null_temp conf/.backup/  cookie logs
 	local FLAG_VAR_TEMP=0
 	local FLAG_VAR_TEMP_DAY=0
 	local VAR_TEMP=" "
@@ -117,6 +119,7 @@ one_piece(){
 	case $date_today in
 
 	"Dom" )
+
 		if test "$(date '+%H')" -ge 09
 		then
 			local TIME_FEED_CHECK=$(date +%H:%M:%S)
@@ -212,140 +215,157 @@ init_cookie(){
 feed_check(){
 
     #----------------------------------------------------------------------------------------------------------------
-    #wget -qO "patch_feed/feed.xml" --limit-rate=10k --load-cookies "cookie/mdan.cookie" "http://bt.mdan.org/rss.php?feedtype=download&timezone=-3&showrows=10&categories=1"
+	#wget -qO "patch_feed/feed.xml" --limit-rate=10k --load-cookies "cookie/mdan.cookie" "http://bt.mdan.org/rss.php?feedtype=download&timezone=-3&showrows=10&categories=1"
 
-    curl --silent -o "patch_feed/feed.xml" --limit-rate 10k --cookie "cookie/mdan.cookie" "http://bt.mdan.org/rss.php?feedtype=download&timezone=-3&showrows=10&categories=1"
+	curl --silent -o "patch_feed/feed_check.xml" --limit-rate 10k --cookie "cookie/mdan.cookie" "http://bt.mdan.org/rss.php?feedtype=download&timezone=-3&showrows=10&categories=1"
     #----------------------------------------------------------------------------------------------------------------
+	# se há algo novo no feed, diff analisará.
 
-   #if [[ "$(curl http://bt.mdan.org/rss.php?feedtype=download&timezone=-3&showrows=10&categories=1 -z patch_feed/feed.xml -o patch_feed/feed_check.xml -s -L -w %{http_code})" == "200" ]]
- # then
-        # code here to process index.html because 200 means it gets updated
-	#mv feed_check.xml feed.xml
- # else
-	#return 1
- # fi
+	if test $(diff patch_feed/feed_check.xml  patch_feed/feed.xml  | wc -l) -le $feed_lenght_min
+	then
+		if test "$1" = "--verbose"
+		then
+			echo -ne '\033[G'
+			echo -ne "\033[11C"
+			echo -ne "\033[0K"
+
+			slow_bot_check; if test $? -eq 1
+			then
+				echo -n "[NORM] UPDATE : [0] | Há nada novo em feed   "
+				sleep 1
+			else
+				echo -n "[SLOW] UPDATE : [0] | Há nada novo em feed   "
+				sleep 1
+			fi
+
+			return 1
+		fi
+	else
+		mv patch_feed/feed_check.xml  patch_feed/feed.xml
+	
+	fi
+   #----------------------------------------------------------------------------------------------------------------
+
+	if test "$1" = "--debug"
+	then
+		echo -e "-----------------------------------------------\n\n"
+		echo -e "Filtrando feed.xml .......\n"
+		echo -e "-----------------------------------------------\n\n"
+	fi
+	#feed.xml contém a última atualização do feed.
+	TIME_FEED_CHECK=$(date +%H:%M:%S)
 
 
-    if test "$1" = "--debug"
-    then
-        echo -e "-----------------------------------------------\n\n"
-        echo -e "Filtrando feed.xml .......\n"
-        echo -e "-----------------------------------------------\n\n"
-    fi
-    #feed.xml contém a última atualização do feed.
-    TIME_FEED_CHECK=$(date +%H:%M:%S)
+	grep '<link>.*</link>' patch_feed/feed.xml  | 
+	sed '1,2 d ; s/<link>//g ; s/<\/link>//g ; s/amp;//g ; s/          //g' | 
+	grep "$(grep '^Anime' conf/conf.script |cut -d = -f 2 | sed 's/:/\\|/g ; s/$/\\)/g ; s/^/\\(/g')" > null_temp/LINK_RELEASE
 
 
-    grep '<link>.*</link>' patch_feed/feed.xml  | 
-    sed '1,2 d ; s/<link>//g ; s/<\/link>//g ; s/amp;//g ; s/          //g' | 
-    grep "$(grep '^Anime' conf/conf.script |cut -d = -f 2 | sed 's/:/\\|/g ; s/$/\\)/g ; s/^/\\(/g')" > null_temp/LINK_RELEASE
+	for LINE_ in $(seq $(grep '^[^#/]' Database/database.db | wc -l))
+	 do 
+	   
+	    NAME_="$(grep "^$LINE_" Database/database.db | cut -d : -f 2 | cut -d \; -f -1)"
+	    #Nome do anime
+
+	    DB_RELEASE="$(grep "^$LINE_" Database/database.db | cut -d : -f 3)"
+	    #Database do anime
+	    
+	    RELEASED="$(grep '^EXPECT_EPI=' $(echo Database/$DB_RELEASE | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
+
+	    
+
+	    ID="$(grep '^ID=' $(echo Database/$DB_RELEASE | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
+	    #ID a ser armazenado
 
 
-    for LINE_ in $(seq $(grep '^[^#/]' Database/database.db | wc -l))
-         do 
-           
-            NAME_="$(grep "^$LINE_" Database/database.db | cut -d : -f 2 | cut -d \; -f -1)"
-            #Nome do anime
+	    while :
+	    do
+		test $RELEASED -gt 0 -a $RELEASED -le 9 &&
+		    RELEASED_OCT="0$RELEASED" ||
+		    RELEASED_OCT="_KNIN_"
+		#Episódio a procura
 
-            DB_RELEASE="$(grep "^$LINE_" Database/database.db | cut -d : -f 3)"
-            #Database do anime
-            
-            RELEASED="$(grep '^EXPECT_EPI=' $(echo Database/$DB_RELEASE | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
+		grep "$NAME_.\($RELEASED\|$RELEASED_OCT\)" null_temp/LINK_RELEASE > null_temp/LINK_TOR
 
-            
+		test "$1" = "--debug"  && echo -ne "Verificando nova atualização ..."
 
-            ID="$(grep '^ID=' $(echo Database/$DB_RELEASE | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
-            #ID a ser armazenado
+		if test  "$(cat null_temp/LINK_TOR)"
 
-        
-            while :
-            do
-                test $RELEASED -gt 0 -a $RELEASED -le 9 &&
-                    RELEASED_OCT="0$RELEASED" ||
-                    RELEASED_OCT="_KNIN_"
-                #Episódio a procura
+		then
 
-                grep "$NAME_.\($RELEASED\|$RELEASED_OCT\)" null_temp/LINK_RELEASE > null_temp/LINK_TOR
-
-                test "$1" = "--debug"  && echo -ne "Verificando nova atualização ..."
-
-                if test  "$(cat null_temp/LINK_TOR)"
-
-                then
-
-                    if test "$1" = "--verbose"
-                    then
-                        echo -ne '\033[G'
-                        echo -ne "\033[11C"
-                        echo -ne '\033[0K'
-
-                        slow_bot_check; if test $? -eq 1
-                        then
-                            echo -n "[NORM] UPDATE : [$UPDATE_FEED] | Feed encontrado : $(cat null_temp/LINK_TOR | cut -d = -f 3)"
-                        else
-                            echo -n "[SLOW] UPDATE : [$UPDATE_FEED] | Feed encontrado : $(cat null_temp/LINK_TOR | cut -d = -f 3)"
-                        fi
-                    fi
-                    
-                    if test "$1" = "--debug"
+		    if test "$1" = "--verbose"
 		    then
-                         echo -ne "sucessed!\n"
-                         echo -e "-----------------------------------------------\n"
-                         echo -e "[UPDATE]----------------K-N-i-N----------------[NEW]"
-                         echo -ne "Anime              : $(echo $NAME_ |sed 's/[._]/ /g')\n"
-                         echo -ne "Episódio: $RELEASED\n"
-                         echo -ne "Name File torrent : $(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')\n"
-                         echo -ne "Time : $TIME_FEED_CHECK\n"
-                         echo -ne "Iniciando Download .."
-                         sleep 4
-                    fi
-                
-                    #wget --limit-rate=25k --load-cookies "cookie/mdan.cookie" -O "rtorrent_watch/$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')"   -o logs/logfile -i null_temp/LINK_TOR
+		        echo -ne '\033[G'
+		        echo -ne "\033[11C"
+		        echo -ne '\033[0K'
+
+		        slow_bot_check; if test $? -eq 1
+		        then
+		            echo -n "[NORM] UPDATE : [$UPDATE_FEED] | Feed encontrado : $(cat null_temp/LINK_TOR | cut -d = -f 3)"
+		        else
+		            echo -n "[SLOW] UPDATE : [$UPDATE_FEED] | Feed encontrado : $(cat null_temp/LINK_TOR | cut -d = -f 3)"
+		        fi
+		    fi
+		    
+		    if test "$1" = "--debug"
+		    then
+		         echo -ne "sucessed!\n"
+		         echo -e "-----------------------------------------------\n"
+		         echo -e "[UPDATE]----------------K-N-i-N----------------[NEW]"
+		         echo -ne "Anime              : $(echo $NAME_ |sed 's/[._]/ /g')\n"
+		         echo -ne "Episódio: $RELEASED\n"
+		         echo -ne "Name File torrent : $(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')\n"
+		         echo -ne "Time : $TIME_FEED_CHECK\n"
+		         echo -ne "Iniciando Download .."
+		         sleep 4
+		    fi
+		
+		    #wget --limit-rate=25k --load-cookies "cookie/mdan.cookie" -O "rtorrent_watch/$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')"   -o logs/logfile -i null_temp/LINK_TOR
 		    curl --silent --limit-rate 32k --cookie "cookie/mdan.cookie" -o "rtorrent_watch/$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')" "$(cat null_temp/LINK_TOR)"
-                
-                    test "$1" = "--debug"  && { 
-                        echo -ne "completado!\n"
-                        echo -e "[UPDATE]----------------K-N-i-N----------------[NEW]" 
-                        }
+		
+		    test "$1" = "--debug"  && { 
+		        echo -ne "completado!\n"
+		        echo -e "[UPDATE]----------------K-N-i-N----------------[NEW]" 
+		        }
 
-                    sleep 2
+		    sleep 2
 
-                    cp $(echo Database/$DB_RELEASE | sed 's/ //') $(echo Database/$DB_RELEASE | sed 's/ //')~
+		    cp $(echo Database/$DB_RELEASE | sed 's/ //') $(echo Database/$DB_RELEASE | sed 's/ //')~
 
 
-                    cat $(echo Database/$DB_RELEASE | sed 's/ //') | sed "s/EXPECT_EPI=$RELEASED/EXPECT_EPI=$(($RELEASED+1))/g ; s/ID=$ID/ID=$(($ID+1))/g" > null_temp/TEMP_DB
+		    cat $(echo Database/$DB_RELEASE | sed 's/ //') | sed "s/EXPECT_EPI=$RELEASED/EXPECT_EPI=$(($RELEASED+1))/g ; s/ID=$ID/ID=$(($ID+1))/g" > null_temp/TEMP_DB
 
-                    echo -ne "TOR>$(($ID)):DIA>$(date +%D):TIME>$TIME_FEED_CHECK:NAME>$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/$//')
-#-----------------------------------------------------\n" >> null_temp/TEMP_DB
+		    echo -ne "TOR>$(($ID)):DIA>$(date +%D):TIME>$TIME_FEED_CHECK:NAME>$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/$//')
+	#-----------------------------------------------------\n" >> null_temp/TEMP_DB
 
-                    mv null_temp/TEMP_DB $(echo Database/$DB_RELEASE | sed 's/ //')
-                    RELEASED=$(($RELEASED+1))
-                    ID=$(($ID +1))
-                    UPDATE_FEED=$(($UPDATE_FEED+1))
+		    mv null_temp/TEMP_DB $(echo Database/$DB_RELEASE | sed 's/ //')
+		    RELEASED=$(($RELEASED+1))
+		    ID=$(($ID +1))
+		    UPDATE_FEED=$(($UPDATE_FEED+1))
 
-                else #[ "$(cat null_temp/LINK_TOR)" ] && 
-                
-                    if test "$1" = "--debug"
+		else #[ "$(cat null_temp/LINK_TOR)" ] && 
+		
+		    if test "$1" = "--debug"
 		    then 
-                        echo -ne "nada novo ..!\n"
-                        echo -e "-----------------------------------------------\n\n"
-                        echo -e "[UPDATE]----------------K-N-i-N----------------[NOTHING]"
-                        echo -ne "Anime              : $(echo $NAME_ |sed 's/[._]/ /g')\n"            
-                        echo -ne "Episódio esperado  : $RELEASED\n"
-                        echo -ne "Horário de checagem: $TIME_FEED_CHECK\n"
-                        echo -e "[UPDATE]----------------K-N-i-N----------------[NOTHING]\n\n"
-                        sleep 4
-                    fi
+		        echo -ne "nada novo ..!\n"
+		        echo -e "-----------------------------------------------\n\n"
+		        echo -e "[UPDATE]----------------K-N-i-N----------------[NOTHING]"
+		        echo -ne "Anime              : $(echo $NAME_ |sed 's/[._]/ /g')\n"            
+		        echo -ne "Episódio esperado  : $RELEASED\n"
+		        echo -ne "Horário de checagem: $TIME_FEED_CHECK\n"
+		        echo -e "[UPDATE]----------------K-N-i-N----------------[NOTHING]\n\n"
+		        sleep 4
+		    fi
 
-                    break # While
-        
-                fi
-    
-        
-        done #while :
+		    break # While
 
-    done #for LINE_ in $(seq $(cat Database/database.db | cut -d : -f 3 | wc -l))
-    
+		fi
+
+
+		done #while :
+
+	done #for LINE_ in $(seq $(cat Database/database.db | cut -d : -f 3 | wc -l))
+
 }
 
 automatic_bot(){
