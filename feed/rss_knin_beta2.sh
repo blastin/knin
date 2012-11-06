@@ -206,7 +206,7 @@ init_cookie(){
 
     	#wget  -qO  "null_temp/web_mdan_connect" --limit-rate=32k --save-cookies "cookie/mdan.cookie" --post-data 'username='$ACCOUNT'&password='$PASSWD'' "http://bt.mdan.org/takelogin.php" 
 
-	curl  --silent -o "null_temp/web_mdan_connect" --limit-rate 32k --cookie-jar "cookie/mdan.cookie" --data 'username=blastin&password=112256dnbonline' "http://bt.mdan.org/takelogin.php" 
+	curl  --silent -o "null_temp/web_mdan_connect" --limit-rate 32k --cookie-jar "cookie/mdan.cookie" --data 'usernamea&password=a' "http://bt.mdan.org/takelogin.php" 
 
 	#conecta-se ao web site , gerando o arquivo cookie
 	test "$1" = "--verbose"  && echo -n " [OK]"
