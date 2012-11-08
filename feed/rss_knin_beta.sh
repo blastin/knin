@@ -38,27 +38,29 @@
 #------04/NOV/12:> Adicionado função para torrent do one piece project.
 #------05/NOV/12:> Inserido checagem de modificação em feed com diff
 #------07/NOV/12:> Analise de erros concluido.
+#---------------: Limpeza e atualização
+#---------------: Database e configuração agora pode ser atualizada sem necessidade de reiniciar o programa
 # INFO        :
 # -- -- [ "$1" -eq 1 ] : debug  < mod  echo -> stdout [screen] 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #
-declare -r ACCOUNT_MDAN=$(grep '^ACCOUNT' conf/conf.script | cut -d = -f 2)
-declare -r PASSWORD_MDAN=$(grep '^PASSWD'  conf/conf.script  | cut -d = -f 2)
-declare -r TIME_UPDATE=$(grep '^TIME_UPDATE' conf/conf.script | cut -d = -f 2)
-declare -r TIME_SYSTEM=$(grep '^TIME_SYSTEM' conf/conf.script | cut -d = -f 2)
-declare -r TIME_NAME=$(grep '^TIME_NAME' conf/conf.script | cut -d = -f 2)
-declare -r SLOW_BOT_TIME_UPDATE=$(grep '^SLOW_BOT_TIME_UPDATE' conf/conf.script | cut -d = -f 2)
-declare -r TIME_UPDATE_DATABASE=$(grep '^TIME_DATABASE_UPDATE' conf/conf.script | cut -d = -f 2)
-declare -r date_time=$(date +%H:%M:%S)
-declare -r headstatus_ok=200
-declare -r feed_lenght_min=4 #valor minímo para checagem em diff
-declare -A TRACKER_CONF_=() 
-declare -A LIST_FILTER_FEED=()
-######################################################################
+
+declare  ACCOUNT_MDAN=$(grep '^ACCOUNT' conf/conf.script | cut -d = -f 2)
+declare  PASSWORD_MDAN=$(grep '^PASSWD'  conf/conf.script  | cut -d = -f 2)
+declare  TIME_UPDATE=$(grep '^TIME_UPDATE' conf/conf.script | cut -d = -f 2)
+declare  TIME_SYSTEM=$(grep '^TIME_SYSTEM' conf/conf.script | cut -d = -f 2)
+declare  TIME_NAME=$(grep '^TIME_NAME' conf/conf.script | cut -d = -f 2)
+declare  SLOW_BOT_TIME_UPDATE=$(grep '^SLOW_BOT_TIME_UPDATE' conf/conf.script | cut -d = -f 2)
+declare  TIME_UPDATE_DATABASE=$(grep '^TIME_DATABASE_UPDATE' conf/conf.script | cut -d = -f 2)
+declare  TIME_UPDATE_CONF=$(grep '^TIME_CONF_SCRIPT_UPDATE' conf/conf.script | cut -d = -f 2)
+
 declare -rA INDICE_TRACKER_CHAVE=(["MODE"]=0 ["TRACKER"]=1 ["TYPE"]=2 ["NAME"]=3 ["DAY"]=4 ["HOUR"]=5 ["DATABASE"]=6 ["COOKIE"]=7 ["LINK"]=8)
 declare -r  INDICE_TRACKER_CONF="${#INDICE_TRACKER_CHAVE[*]}"
-######################################################################
-
+declare -r date_time=$(date +%H:%M:%S)
+declare -r headstatus_ok=200
+declare -r feed_lenght_min=4 #valor mínimo de linhas  a checar em diff
+declare -A TRACKER_CONF_=() 
+declare -A LIST_FILTER_FEED=()
 declare DATABASE_TOTAL
 declare UPDATE_FEED=0
 declare SLOW_BOT
@@ -70,11 +72,10 @@ declare TIME_UPDATE_NEXT_BEFORE_FEED_CHECK=0
 declare TIME_UPDATE_NEXT_BEFORE_SLEEP=0
 declare BUFF_TIME_EXCESS=0
 declare NEXT_TIME_UPDATE_DATABASE
-#EP_ONEPIECE="$(grep '^EXPECT_EPI=' $(echo Database/database_one_piece.db | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
-#ID_ONEPIECE="$(grep '^ID=' $(echo Database/database_one_piece.db | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
+declare NEXT_TIME_CONF_SCRIPT_UPDATE="$(date -d "$TIME_UPDATE_CONF" +'%H')"
 
 
-init(){
+function init(){
 	reset
 	rm -rf null_temp conf/.backup/ cookie logs patch_feed
 	mkdir null_temp conf/.backup/  cookie logs patch_feed
@@ -86,6 +87,9 @@ init(){
 	local SLOW_BOT_DAY_CONF_SCRIPT="$(grep "^SLOW_BOT_DAY=" conf/conf.script | cut -d = -f 2 | cut -d \# -f 1)"
 	local SLOW_BOT_COUNT=0
 	local SLOW_BOT_COUNT_DAY=0
+
+	#####################
+	#TODO: conf/feed.filters
 	#local LIST_TRACKER_COUNT=0
 
 	
@@ -109,8 +113,9 @@ init(){
 		#else
 		#	break
 		#fi
-
 	#done
+	#####################
+
 	while :
 	do
 		VAR_TEMP="$(echo $SLOW_BOT_CONF_SCRIPT | cut -d : -f "$(($SLOW_BOT_COUNT+1))")"
@@ -144,7 +149,7 @@ init(){
 
 }
 
-bot_print(){
+function bot_print(){
 
 	if test -n "$1"
 	then
@@ -173,7 +178,7 @@ bot_print(){
 
 }
 
-filters_feed(){ #todos filters ficaram aqui até resolver conf/feed.filters
+function filters_feed(){ #todos filters ficaram aqui até resolver conf/feed.filters
 
 	if test -n "$2"
 	then
@@ -199,7 +204,7 @@ filters_feed(){ #todos filters ficaram aqui até resolver conf/feed.filters
 }
 
 
-filters_episodio(){
+function filters_episodio(){
 
 	#$2 = Tracker
 	#$3 = Número do Episódio
@@ -234,7 +239,7 @@ filters_episodio(){
 }
 
 
-conf_get(){
+function conf_get(){
 
 	local TRACKER_ADD=0
 
@@ -342,7 +347,7 @@ conf_get(){
 
 
 
-torrent_file_get(){
+function torrent_file_get(){
 #
 	if test -n "$1"
 	then
@@ -403,7 +408,7 @@ torrent_file_get(){
 
 }
 
-slow_bot_check(){
+function slow_bot_check(){
 
 	if test -n "${#SLOW_BOT_DAY[*]}"
 	then
@@ -428,7 +433,7 @@ slow_bot_check(){
 
 
 
-cookie_(){ 
+function cookie_(){ 
 
 #$1 debug ou verbose
 
@@ -450,33 +455,60 @@ cookie_(){
 
 		esac
 
-
 	fi
 
 	test "$1" = "--verbose"  && echo -n " [OK]"
-
-    	#wget  -qO  "null_temp/web_mdan_connect" --limit-rate=32k --save-cookies "cookie/mdan.cookie" --post-data 'username='$ACCOUNT'&password='$PASSWD'' "http://bt.mdan.org/takelogin.php" 
-
-
+    	
 	
 }
 
 
 
-feed_check(){
-#TIME_UPDATE_DATABASE
+function feed_check(){
 
-	if test "$(date '+%H')" -eq "$NEXT_TIME_UPDATE_DATABASE"
+
+	if test "$(date '+%H')" -ge "$NEXT_TIME_UPDATE_DATABASE" #Atualização do banco de dados
 	then
 
 		local FLAG_DATABASE_UPDATE="$(grep '^FLAG_DATABASE_UPDATE' conf/file_var.script | cut -d \= -f 2)"
 		if test "$FLAG_DATABASE_UPDATE" -eq 1
 		then
 			bot_print "$1" "Atualizado informações do banco de dados"
-			conf_get "$1"			
-			cat conf/file_var.script | sed 's/FLAG_DATABASE_UPDATE=1/FLAG_DATABASE_UPDATE=0/' > conf/file_var.script
+			conf_get "$1"	
+		
+			cat conf/file_var.script | sed 's/FLAG_DATABASE_UPDATE=1/FLAG_DATABASE_UPDATE=0/' | tee null_temp/file_var.temp  > /dev/null
+			mv null_temp/file_var.temp conf/file_var.script
+
 			NEXT_TIME_UPDATE_DATABASE="$(date -d "$TIME_UPDATE_DATABASE" +'%H')"
+			bot_print "$1" "banco de dados foi atualizado com sucesso !"
 		fi
+	fi
+	
+	if test "$(date '+%H')" -ge "$NEXT_TIME_CONF_SCRIPT_UPDATE" #Atualização do arquivo conf.script
+	then
+
+		local FLAG_CONF_SCRIPT_UPDATE="$(grep '^FLAG_CONF_SCRIPT_UPDATE' conf/file_var.script | cut -d \= -f 2)"
+		if test "$FLAG_DATABASE_UPDATE" -eq 1
+		then
+			bot_print "$1" "Atualizado informações do conf.script"
+			
+			ACCOUNT_MDAN=$(grep '^ACCOUNT' conf/conf.script | cut -d = -f 2)
+			PASSWORD_MDAN=$(grep '^PASSWD'  conf/conf.script  | cut -d = -f 2)
+			TIME_UPDATE=$(grep '^TIME_UPDATE' conf/conf.script | cut -d = -f 2)
+			TIME_SYSTEM=$(grep '^TIME_SYSTEM' conf/conf.script | cut -d = -f 2)
+			TIME_NAME=$(grep '^TIME_NAME' conf/conf.script | cut -d = -f 2)
+			SLOW_BOT_TIME_UPDATE=$(grep '^SLOW_BOT_TIME_UPDATE' conf/conf.script | cut -d = -f 2)
+			TIME_UPDATE_DATABASE=$(grep '^TIME_DATABASE_UPDATE' conf/conf.script | cut -d = -f 2)
+			TIME_UPDATE_CONF=$(grep '^TIME_CONF_SCRIPT_UPDATE' conf/conf.script | cut -d = -f 2)
+
+			cat conf/file_var.script | sed 's/FLAG_CONF_SCRIPT_UPDATE=1/FLAG_CONF_SCRIPT_UPDATE=0/' | tee null_temp/file_var.temp  > /dev/null
+			mv null_temp/file_var.temp conf/file_var.script 
+
+			NEXT_TIME_CONF_SCRIPT_UPDATE="$(date -d "$TIME_UPDATE_CONF" +'%H')"
+			bot_print "$1" "conf.script foi atualizado com sucesso!"
+		fi
+
+
 	fi
 
 	for LINE_ in $(seq $(grep '^[^#/]' Database/database.db | wc -l))
@@ -494,17 +526,16 @@ feed_check(){
 		local MODE="${TRACKERS_CONF_[$(($(($LINE_       - 1))* $INDICE_TRACKER_CONF + ${INDICE_TRACKER_CHAVE['MODE']}))]}"
 		local TYPE="${TRACKERS_CONF_[$(($(($LINE_       - 1))* $INDICE_TRACKER_CONF + ${INDICE_TRACKER_CHAVE['TYPE']}))]}"
 		local NAME="${TRACKERS_CONF_[$(($(($LINE_       - 1))* $INDICE_TRACKER_CONF + ${INDICE_TRACKER_CHAVE['NAME']}))]}"
-		local DB_RELEASE="${TRACKERS_CONF_[$(($(($LINE_ - 1))* $INDICE_TRACKER_CONF + ${INDICE_TRACKER_CHAVE['DATABASE']}))]}"
-		local ID="$(grep '^ID=' $(echo Database/$DB_RELEASE | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
-		local EPISODIO="$(grep '^EXPECT_EPI=' $(echo Database/$DB_RELEASE | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
+		local DATABASE="${TRACKERS_CONF_[$(($(($LINE_   - 1))* $INDICE_TRACKER_CONF + ${INDICE_TRACKER_CHAVE['DATABASE']}))]}"
+		local ID="$(grep '^ID=' $(echo Database/$DATABASE | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
+		local EPISODIO="$(grep '^EXPECT_EPI=' $(echo Database/$DATABASE | sed 's/ //') | cut -d = -f 2 | cut -d \# -f -1 | cut -d \; -f -1)"
 		
-		#feed.xml contém a última atualização do feed.
-		TIME_FEED_CHECK=$(date +%H:%M:%S)
+		TIME_FEED_CHECK=$(date +%H:%M:%S) #feed.xml contém a última atualização do feed.
+
 		case  "$MODE" in
 
 			"_FEED_" )
 				
-
 				case "$COOKIE" in
 				
 					"YES" )
@@ -519,26 +550,16 @@ feed_check(){
 								continue
 							else
 
-								if test "$1" = "--debug"
-								then
-									echo -e "-----------------------------------------------\n\n"
-									echo -e "Filtrando feed.xml .......\n"
-									echo -e "-----------------------------------------------\n\n"
-								fi
 								mv 'patch_feed/feed_check_'"$TRACKER"'.xml'  'patch_feed/feed_'"$TRACKER"'.xml'
-								###############################
-								# FILTER
+								
 								filters_feed "$1" "$TRACKER"
-								###############################
-							
+								
 							fi
 						else
-							 bot_print "$1" "arquivo "$TRACKER".xml não encontrado, irei mover check para a origem"
+							bot_print "$1" "arquivo "$TRACKER".xml não encontrado, irei mover check para a origem"
 							mv 'patch_feed/feed_check_'"$TRACKER"'.xml'  'patch_feed/feed_'"$TRACKER"'.xml'
-							###############################
-							# FILTER
+							
 							filters_feed "$1" "$TRACKER"
-							###############################
 							
 						fi
 						
@@ -563,94 +584,37 @@ feed_check(){
 			;;
 		esac
 		
-		#----------------------------------------------------------------------------------------------------------------
-		#wget -qO "patch_feed/feed.xml" --limit-rate=10k --load-cookies "cookie/mdan.cookie" "http://bt.mdan.org/rss.php?feedtype=download&timezone=-3&showrows=10&categories=1"
-
-		#curl --silent -o "patch_feed/feed_check_"$TRACKER".xml" --limit-rate 10k --cookie "cookie/"$TRACKER".cookie" "http://bt.mdan.org/rss.php?feedtype=download&timezone=-3&showrows=10&categories=1"
-	
-	
-	#FIM
-		#Início do código antigo e obsoleto
+		
 		while :
 	    	do
-			#$1 = Tracker
-			#$2 = Número do Episódio
-			#$3 = Nome da mídia
+			#$1 = DEBUG,VERBOSE,QUIET
+			#$2 = Tracker
+			#$3 = Número do Episódio
+			#$4 = Nome da mídia
 
-			
 			test "$TYPE" = "Private" -o "$TYPE" = "private" && filters_episodio "$1" "$TRACKER" "$EPISODIO" "$NAME"
 
-
-			#test $RELEASED -gt 0 -a $RELEASED -le 9 &&
-			    #RELEASED_OCT="0$RELEASED" ||
-			   # RELEASED_OCT="_KNIN_"
-			#Episódio a procura
-
-			#grep "$NAME_.\($RELEASED\|$RELEASED_OCT\)" null_temp/LINK_RELEASE > null_temp/LINK_TOR
-
-			test "$1" = "--debug"  && echo -ne "Verificando nova atualização ..."
-
 			if test  "$(cat null_temp/LINK_TOR)"
-
 			then
 
-			  
 				bot_print "$1" "Feed encontrado : $(cat null_temp/LINK_TOR | cut -d = -f 3)"
-			   
+			   		
+				torrent_file_get "$TYPE" "$TRACKER"
 			    
-			    if test "$1" = "--debug"
-			    then
-				 echo -ne "sucessed!\n"
-				 echo -e "-----------------------------------------------\n"
-				 echo -e "[UPDATE]----------------K-N-i-N----------------[NEW]"
-				 echo -ne "Midia              : $(echo $NAME |sed 's/[._]/ /g')\n"
-				 echo -ne "Episódio: $EPISODIO\n"
-				 echo -ne "Name File torrent : $(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')\n"
-				 echo -ne "Time : $TIME_FEED_CHECK\n"
-				 echo -ne "Iniciando Download .."
-				 sleep 4
-			    fi
-		
-			    torrent_file_get "$TYPE" "$TRACKER"
-			    
-		
-			    test "$1" = "--debug"  && { 
-				echo -ne "completado!\n"
-				echo -e "[UPDATE]----------------K-N-i-N----------------[NEW]" 
-				}
+			    	cp $(echo Database/$DATABASE | sed 's/ //') $(echo Database/$DATABASE | sed 's/ //')
 
-			   
-
-			    cp $(echo Database/$DB_RELEASE | sed 's/ //') $(echo Database/$DB_RELEASE | sed 's/ //')~
-
-
-			    cat $(echo Database/$DB_RELEASE | sed 's/ //') | sed "s/EXPECT_EPI=$EPISODIO/EXPECT_EPI=$(($EPISODIO+1))/g ; s/ID=$ID/ID=$(($ID+1))/g" > null_temp/TEMP_DB
-
-			    echo -ne "TOR>$(($ID)):DIA>$(date +%D):TIME>$TIME_FEED_CHECK:NAME>$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/$//')
+			    	cat $(echo Database/$DATABASE | sed 's/ //') | sed "s/EXPECT_EPI=$EPISODIO/EXPECT_EPI=$(($EPISODIO+1))/g ; s/ID=$ID/ID=$(($ID+1))/g" > null_temp/TEMP_DB
+			    	echo -ne "TOR>$(($ID)):DIA>$(date +%D):TIME>$TIME_FEED_CHECK:NAME>$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/$//')
 		#-----------------------------------------------------\n" >> null_temp/TEMP_DB
 
-			    mv null_temp/TEMP_DB $(echo Database/$DB_RELEASE | sed 's/ //')
-			    EPISODIO=$(($EPISODIO+1))
-			    ID=$(($ID +1))
-			    UPDATE_FEED=$(($UPDATE_FEED+1))
+			    	mv null_temp/TEMP_DB $(echo Database/$DATABASE | sed 's/ //')	
+			    	EPISODIO=$(($EPISODIO+1))
+			    	ID=$(($ID +1))
+			    	UPDATE_FEED=$(($UPDATE_FEED+1))
 
-			else #[ "$(cat null_temp/LINK_TOR)" ] && 
-		
-			    if test "$1" = "--debug"
-			    then 
-				echo -ne "nada novo ..!\n"
-				echo -e "-----------------------------------------------\n\n"
-				echo -e "[UPDATE]----------------K-N-i-N----------------[NOTHING]"
-				echo -ne "Midia              : $(echo $NAME |sed 's/[._]/ /g')\n"            
-				echo -ne "Episódio esperado  : $EPISODIO\n"
-				echo -ne "Horário de checagem: $TIME_FEED_CHECK\n"
-				echo -e "[UPDATE]----------------K-N-i-N----------------[NOTHING]\n\n"
-				sleep 4
-			    fi
-
-		    break # While
-
-		fi
+		    	else
+				break
+			fi
 
 
 		done #while :
@@ -659,7 +623,7 @@ feed_check(){
 
 }
 
-automatic_bot(){
+function automatic_bot(){
 
 	init $1
 
