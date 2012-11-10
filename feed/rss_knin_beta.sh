@@ -38,44 +38,47 @@
 #------04/NOV/12:> Adicionado função para torrent do one piece project.
 #------05/NOV/12:> Inserido checagem de modificação em feed com diff
 #------07/NOV/12:> Analise de erros concluido.
-#---------------:  Limpeza e atualização
-#---------------:  Database e configuração agora pode ser atualizada sem necessidade de reiniciar o programa
+#---------------: Limpeza e atualização
+#---------------: Database e configuração agora pode ser atualizada sem necessidade de reiniciar o programa
 #------08/NOV/12:> Limpeza e atualização
+#------10/NOV/12:> Limpeza e atualização
 # INFO        :
 # -- -- [ "$1" -eq 1 ] : debug  < mod  echo -> stdout [screen] 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #
 declare -rA INDICE_TRACKER_CHAVE=(["MODE"]=0 ["TRACKER"]=1 ["TYPE"]=2 ["NAME"]=3 ["CATEGORIA"]=4 ["DAY"]=5 ["HOUR"]=6 ["DATABASE"]=7 ["COOKIE"]=8 ["LINK"]=9)
 declare -r  INDICE_TRACKER_CONF="${#INDICE_TRACKER_CHAVE[*]}"
-declare -r date_time=$(date +%H:%M:%S)
-declare -r headstatus_ok=200
-declare -r feed_lenght_min=4 #valor mínimo de linhas  a checar em diff
+declare -A  TRACKER_CONF_ 
+declare -A  LIST_FILTER_FEED
+declare -r  date_time=$(date +%H:%M:%S)
+declare -r  headstatus_ok=200
+declare -r  feed_lenght_min=4 #valor mínimo de linhas  a checar em diff
 
-declare  ACCOUNT_MDAN="$(grep '^ACCOUNT' conf/conf.script | cut -d = -f 2)"
-declare  PASSWORD_MDAN="$(grep '^PASSWD'  conf/conf.script  | cut -d = -f 2)"
-declare  TIME_UPDATE="$(grep '^TIME_UPDATE' conf/conf.script | cut -d = -f 2)"
-declare  TIME_SYSTEM="$(grep '^TIME_SYSTEM' conf/conf.script | cut -d = -f 2)"
-declare  TIME_NAME="$(grep '^TIME_NAME' conf/conf.script | cut -d = -f 2)"
-declare  SLOW_BOT_TIME_UPDATE="$(grep '^SLOW_BOT_TIME_UPDATE' conf/conf.script | cut -d = -f 2)"
-declare  TIME_UPDATE_DATABASE="$(grep '^TIME_DATABASE_UPDATE' conf/conf.script | cut -d = -f 2)"
-declare  TIME_UPDATE_CONF="$(grep '^TIME_CONF_SCRIPT_UPDATE' conf/conf.script | cut -d = -f 2)"
-declare  SLOW_BOT_CONF_SCRIPT="$(grep "^SLOW_BOT=" conf/conf.script | cut -d = -f 2 | cut -d \# -f 1)"
-declare  SLOW_BOT_DAY_CONF_SCRIPT="$(grep "^SLOW_BOT_DAY=" conf/conf.script | cut -d = -f 2 | cut -d \# -f 1)"
-declare -A TRACKER_CONF_=() 
-declare -A LIST_FILTER_FEED=()
-declare DATABASE_TOTAL
-declare UPDATE_FEED=0
-declare SLOW_BOT
-declare SLOW_BOT_DAY
-declare LIST_TRACKER
-declare LIST_TRACKER_COOKIE
-declare TRACKER_TIME_FLAG=1
-declare TIME_UPDATE_NEXT_BEFORE_FEED_CHECK=0
-declare TIME_UPDATE_NEXT_BEFORE_SLEEP=0
-declare BUFF_TIME_EXCESS=0
-declare NEXT_TIME_UPDATE_DATABASE
-declare NEXT_TIME_CONF_SCRIPT_UPDATE="$(date -d "$TIME_UPDATE_CONF" +'%H')"
-declare VAR_TEMP_GLOBAL
+declare     ACCOUNT_MDAN="$(grep '^ACCOUNT' conf/conf.script | cut -d = -f 2)"
+declare     PASSWORD_MDAN="$(grep '^PASSWD'  conf/conf.script  | cut -d = -f 2)"
+declare     TIME_UPDATE="$(grep '^TIME_UPDATE' conf/conf.script | cut -d = -f 2)"
+declare     TIME_SYSTEM="$(grep '^TIME_SYSTEM' conf/conf.script | cut -d = -f 2)"
+declare     TIME_NAME="$(grep '^TIME_NAME' conf/conf.script | cut -d = -f 2)"
+declare	    SLOW_BOT_TIME_UPDATE="$(grep '^SLOW_BOT_TIME_UPDATE' conf/conf.script | cut -d = -f 2)"
+declare     TIME_UPDATE_DATABASE="$(grep '^TIME_DATABASE_UPDATE' conf/conf.script | cut -d = -f 2)"
+declare     TIME_UPDATE_CONF="$(grep '^TIME_CONF_SCRIPT_UPDATE' conf/conf.script | cut -d = -f 2)"
+declare     SLOW_BOT_HOUR_CONF_SCRIPT="$(grep '^SLOW_BOT_HOUR=' conf/conf.script | cut -d = -f 2 | cut -d \# -f 1)"
+declare     SLOW_BOT_DAY_CONF_SCRIPT="$(grep '^SLOW_BOT_DAY=' conf/conf.script | cut -d = -f 2 | cut -d \# -f 1)"
+
+declare     DATABASE_TOTAL
+declare     UPDATE_FEED=0
+declare     SLOW_BOT_HOUR
+declare     SLOW_BOT_DAY
+declare     LIST_TRACKER
+declare     LIST_TRACKER_COOKIE
+declare     TRACKER_TIME_FLAG=1
+declare     TIME_UPDATE_NEXT_BEFORE_SLEEP=0
+declare     BUFF_TIME_EXCESS=0
+declare     NEXT_TIME_UPDATE_DATABASE
+declare     NEXT_TIME_CONF_SCRIPT_UPDATE="$(date -d "$TIME_UPDATE_CONF" +'%H')"
+declare     VAR_TEMP_GLOBAL
+
+
 function init(){
 	reset
 	rm -rf null_temp conf/.backup/ cookie logs patch_feed
@@ -85,7 +88,7 @@ function init(){
 	local VAR_TEMP=" "
 	local VAR_TEMP_DAY=" "
 	
-	local SLOW_BOT_COUNT=0
+	local SLOW_BOT_COUNT_HOUR=0
 	local SLOW_BOT_COUNT_DAY=0
 
 	#####################
@@ -118,13 +121,13 @@ function init(){
 
 	while :
 	do
-		VAR_TEMP="$(echo $SLOW_BOT_CONF_SCRIPT | cut -d : -f "$(($SLOW_BOT_COUNT+1))")"
+		VAR_TEMP="$(echo $SLOW_BOT_HOUR_CONF_SCRIPT | cut -d : -f "$(($SLOW_BOT_COUNT_HOUR+1))")"
 		
 
 		if test -n  "$VAR_TEMP"
 		then		
-			SLOW_BOT["$SLOW_BOT_COUNT"]="$VAR_TEMP"
-			SLOW_BOT_COUNT=$(($SLOW_BOT_COUNT+1))
+			SLOW_BOT_HOUR["$SLOW_BOT_COUNT_HOUR"]="$VAR_TEMP"
+			SLOW_BOT_COUNT_HOUR=$(($SLOW_BOT_COUNT_HOUR+1))
 		
 		else
 			break
@@ -165,12 +168,13 @@ function bot_print(){
 			else
 				echo -n "MODE[SLOW] DB[$DATABASE_TOTAL] LTC[${#LIST_TRACKER_COOKIE[*]}] UPD[$TIME_UPDATE_DATABASE] UPC[$TIME_UPDATE_CONF] UPDATE[$SLOW_BOT_TIME_UPDATE $TIME_NAME] Notice[$UPDATE_FEED] | "$2"   "
 			fi
-			sleep 3
+			test -z "$3" && sleep 2
+			
 
 		elif test "$1" != "--quiet"
 		then
 			echo "$2"
-			sleep 3
+			test -z "$3" && sleep 2
 		fi
 
 	fi
@@ -417,19 +421,20 @@ function torrent_file_get(){
 
 function slow_bot_check(){
 
-	if test -n "${#SLOW_BOT_DAY[*]}"
+	if test "${#SLOW_BOT_DAY[*]}" -ne 0
 	then
 		for LINE_ in $(seq ${#SLOW_BOT_DAY[*]})
 		do
 			test "$(date '+%a')" = "${SLOW_BOT_DAY["$(($LINE_-1))"]}" -o "$(date '+%A')" = "${SLOW_BOT_DAY["$(($LINE_-1))"]}"  && return 0
 		done
+
 	fi
 
-	if test -n "${#SLOW_BOT[*]}"
+	if test "${#SLOW_BOT_HOUR[*]}" -ne 0
 	then
-		for LINE_ in $(seq ${#SLOW_BOT[*]})
+		for LINE_ in $(seq ${#SLOW_BOT_HOUR[*]})
 		do
-			test "$(date '+%H')" -eq "${SLOW_BOT["$(($LINE_-1))"]}" && return 0
+			test "$(date '+%H')" -eq "${SLOW_BOT_HOUR["$(($LINE_-1))"]}" && return 0
 		done
 	fi
 	
@@ -514,8 +519,8 @@ function feed_check(){
 			SLOW_BOT_TIME_UPDATE="$(grep '^SLOW_BOT_TIME_UPDATE' conf/conf.script | cut -d = -f 2)"
 			TIME_UPDATE_DATABASE="$(grep '^TIME_DATABASE_UPDATE' conf/conf.script | cut -d = -f 2)"
 			TIME_UPDATE_CONF="$(grep '^TIME_CONF_SCRIPT_UPDATE' conf/conf.script | cut -d = -f 2)"
-			SLOW_BOT_CONF_SCRIPT="$(grep "^SLOW_BOT=" conf/conf.script | cut -d = -f 2 | cut -d \# -f 1)"
-			SLOW_BOT_DAY_CONF_SCRIPT="$(grep "^SLOW_BOT_DAY=" conf/conf.script | cut -d = -f 2 | cut -d \# -f 1)"
+			SLOW_BOT_HOUR_CONF_SCRIPT="$(grep '^SLOW_BOT_HOUR=' conf/conf.script | cut -d = -f 2 | cut -d \# -f 1)"
+			SLOW_BOT_DAY_CONF_SCRIPT="$(grep '^SLOW_BOT_DAY=' conf/conf.script | cut -d = -f 2 | cut -d \# -f 1)"
 
 			cat conf/file_var.script | sed 's/FLAG_CONF_SCRIPT_UPDATE=1/FLAG_CONF_SCRIPT_UPDATE=0/' | tee null_temp/file_var.temp  > /dev/null
 			mv null_temp/file_var.temp conf/file_var.script 
@@ -606,8 +611,6 @@ function feed_check(){
 				bot_print "$1" "Verificando disponibilidade de $NAME $EPISODIO"			
 				filters_feed "$1" "$TRACKER" "$EPISODIO" "$NAME"
 			fi
-			
-			#slow_bot_check; if test $? -eq 1
 
 			if test  "$(cat null_temp/LINK_TOR)"
 			then
@@ -660,27 +663,34 @@ function automatic_bot(){
 	init $1
 
 	if test "$1" != "--quiet"
-	then
-	    echo -e ".... Project KNiN   : Feed ....\n"
-	    echo -e ".... Bem Vindo - Blastin ....\n"
-	    echo -e "Horário de Início   : $date_time"
-	    echo -e "\n-----------------------------------------------\n"
-	    echo -e "TIME UPDATE NORMAL  : $TIME_UPDATE $TIME_NAME\n"
-	    echo -e "TIME UPDATE SLOW    : $SLOW_BOT_TIME_UPDATE $TIME_NAME\n"
-	    echo -e "TIME DATABASE UPDATE: $TIME_UPDATE_DATABASE\n"
-	    echo -e "TIME CONF UPDATE    : $TIME_UPDATE_CONF\n"
-	    echo -ne "SLOW CPU            : "
-	    for LINE_ in $(seq ${#SLOW_BOT[*]})
-	    do
-	    	echo -ne "(${SLOW_BOT["$(($LINE_-1))"]}:00)" 
-	    done
-	    echo -e "\n"
-	    echo -ne "SLOW CPU DAY        : "
-	    for LINE_ in $(seq ${#SLOW_BOT_DAY[*]})
-	    do
-	    	echo -ne "(${SLOW_BOT_DAY["$(($LINE_-1))"]})" 
-	    done
-	    echo -e "\n-----------------------------------------------\n"
+		then
+		echo -e ".... Project KNiN   : Feed ....\n"
+		echo -e ".... Bem Vindo - Blastin ....\n"
+		echo -e "Horário de Início   : $date_time"
+		echo -e "\n-----------------------------------------------\n"
+		echo -e "TIME UPDATE NORMAL  : $TIME_UPDATE $TIME_NAME\n"
+		echo -e "TIME UPDATE SLOW    : $SLOW_BOT_TIME_UPDATE $TIME_NAME\n"
+		echo -e "TIME DATABASE UPDATE: $TIME_UPDATE_DATABASE\n"
+		echo -e "TIME CONF UPDATE    : $TIME_UPDATE_CONF\n"
+		if test "${#SLOW_BOT_HOUR[*]}" -ne 0
+		then
+			echo -ne "SLOW CPU            : "
+			for LINE_ in $(seq ${#SLOW_BOT_HOUR[*]})
+			do
+				echo -ne "(${SLOW_BOT_HOUR["$(($LINE_-1))"]}:00)" 
+			done
+			echo -e "\n"
+		fi
+		if test "${#SLOW_BOT_DAY[*]}" -ne 0
+		then
+		    echo -ne "SLOW CPU DAY        : "
+		    for LINE_ in $(seq ${#SLOW_BOT_DAY[*]})
+		    do
+		    	echo -ne "(${SLOW_BOT_DAY["$(($LINE_-1))"]})" 
+		    done
+		   
+		fi
+		 
 	fi
 
 	conf_get "$1"
@@ -693,7 +703,6 @@ function automatic_bot(){
 
 	while :
 	do
-
 		feed_check "$1"
 
 		TIME_UPDATE_NEXT_BEFORE_FEED_CHECK=$(date +%s)
@@ -711,22 +720,21 @@ function automatic_bot(){
 
 			#Seguindo a regra de ser específicado  em conf/conf.script 
 		    	TIME_UPDATE_NEXT=$(($TIME_UPDATE * $TIME_SYSTEM))
-			bot_print "$1" "Próxima atualização : $(date -d "$TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)"
-		   
+			bot_print "$1" "Próxima atualização : $(date -d "$TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)" "off sleep"
+
 		else
 		    	#Seguindo a regra de ser específicado  em conf/conf.script 
 		    	TIME_UPDATE_NEXT=$(($SLOW_BOT_TIME_UPDATE * $TIME_SYSTEM)) 
-			bot_print "$1" "Próxima atualização : $(date -d "$SLOW_BOT_TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)"
+			bot_print "$1" "Próxima atualização : $(date -d "$SLOW_BOT_TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)" "off sleep"
 		fi
 
-		
+
 		#-------- ------------Sleep--------- ------------#
 		sleep $(($TIME_UPDATE_NEXT - $BUFF_TIME_EXCESS)) #
 		TIME_UPDATE_NEXT_BEFORE_SLEEP=$(date '+%s')        #
 		#-------- ----------- KNiN --------- ------------#
 
-		bot_print "$1" "Inicializando Checagem de atualização !"
-		
+		bot_print "$1" "Inicializando checagem de atualização !"
 	done
 
 }
