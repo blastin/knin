@@ -42,6 +42,8 @@
 #---------------: Database e configuração agora pode ser atualizada sem necessidade de reiniciar o programa
 #------08/NOV/12:> Limpeza e atualização
 #------10/NOV/12:> Limpeza e atualização
+#------11/NOV/12:> Error na função torrent_get foi fixado
+#---------------:> Limpeza e atualização
 # INFO        :
 # -- -- [ "$1" -eq 1 ] : debug  < mod  echo -> stdout [screen] 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -164,9 +166,9 @@ function bot_print(){
 
 			slow_bot_check; if test $? -eq 1
 			then
-				echo -n "MODE[NORM] DB[$DATABASE_TOTAL] LTC[${#LIST_TRACKER_COOKIE[*]}] UPD[$TIME_UPDATE_DATABASE] UPC[$TIME_UPDATE_CONF] UPDATE[$TIME_UPDATE $TIME_NAME] Notice[$UPDATE_FEED] | "$2"   "
+				echo -n "MODE[NORM] DB[$DATABASE_TOTAL] LTC[${#LIST_TRACKER_COOKIE[*]}] UPD[$TIME_UPDATE_DATABASE] UPC[$TIME_UPDATE_CONF] UPDATE[$TIME_UPDATE $TIME_NAME] Notice[$UPDATE_FEED] <> "$2"   "
 			else
-				echo -n "MODE[SLOW] DB[$DATABASE_TOTAL] LTC[${#LIST_TRACKER_COOKIE[*]}] UPD[$TIME_UPDATE_DATABASE] UPC[$TIME_UPDATE_CONF] UPDATE[$SLOW_BOT_TIME_UPDATE $TIME_NAME] Notice[$UPDATE_FEED] | "$2"   "
+				echo -n "MODE[SLOW] DB[$DATABASE_TOTAL] LTC[${#LIST_TRACKER_COOKIE[*]}] UPD[$TIME_UPDATE_DATABASE] UPC[$TIME_UPDATE_CONF] UPDATE[$SLOW_BOT_TIME_UPDATE $TIME_NAME] Notice[$UPDATE_FEED] <> "$2"   "
 			fi
 			test -z "$3" && sleep 2
 			
@@ -363,6 +365,7 @@ function torrent_file_get(){
 #
 	if test -n "$1" -a -n "$2"
 	then
+		declare MODE
 		case "$1" in 
 
 		"Private")
@@ -371,14 +374,14 @@ function torrent_file_get(){
 
 			"MDAN" ) 
 
-				#curl --silent --globoff --cookie 'cookie/'"$TRACKER"'.cookie' -o "rtorrent_watch/$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')" "$(cat null_temp/LINK_TOR)"
+				MODE="--load-cookies cookie/$2.xml"
 
-				wget --limit-rate=25k --load-cookies 'cookie/'"$TRACKER"'.cookie' -qO "rtorrent_watch/$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')"   -o logs/logfile -i null_temp/LINK_TOR
+				#wget --limit-rate=25k --load-cookies 'cookie/'"$TRACKER"'.cookie' -qo logs/logfile -i null_temp/LINK_TOR
 			;;	
 
 			"SUPERSEEDS" )
 
-				wget --limit-rate=25k  -qO "rtorrent_watch/$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')"   -o logs/logfile -i null_temp/LINK_TOR
+				#wget --limit-rate=25k  -qo logs/logfile -i null_temp/LINK_TOR
 			;;		
 			* )
 				bot_print "$1" "ERROR : argumento 2 em função torrent_file_get é diferente das constantes"
@@ -389,11 +392,11 @@ function torrent_file_get(){
 		;;
 		"Public")
 			
-		
 			case "$2" in
 
 			"Project" )
-			
+
+				#wget --limit-rate=25k -qo logs/logfile -i null_temp/LINK_TOR
 			;;
 
 			* )
@@ -405,11 +408,8 @@ function torrent_file_get(){
 			
 		;;	
 		esac
+			wget --limit-rate=25k $MODE --directory-prefix=rtorrent_watch/ --quiet --output-file=logs/logfile --input-file=null_temp/LINK_TOR
 
-		#curl --silent --limit-rate 32k "$MODE_" -o "rtorrent_watch/$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')" "$(cat null_temp/LINK_TOR)"
-		#test ! -f "rtorrent_watch/$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/torrent.*/torrent/')" "$(cat null_temp/LINK_TOR)" && \
-		
-			
 	else
 		echo "ERROR : argumento 1 e 2 em função torrent_file_get não especificado"
 		exit 1
@@ -449,7 +449,7 @@ function cookie_(){
 
 #$1 debug ou verbose
 
-	bot_print "$1" "Salvando cookie:"
+	bot_print "$1" "Salvando cookie"
         
 	if test -n "$2"
 	then
@@ -468,9 +468,6 @@ function cookie_(){
 		esac
 
 	fi
-
-	test "$1" = "--verbose"  && echo -n " [OK]"
-    	
 	
 }
 
@@ -566,6 +563,7 @@ function feed_check(){
 						
 				elif test "$COOKIE" =  "NO"
 				then
+
 						wget -qO 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml' --limit-rate=10k "$LINK"
 
 				else
@@ -578,24 +576,19 @@ function feed_check(){
 				then
 					if test $(diff 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml' 'patch_feed/feed_'"$TRACKER"'.'"$NAME"'.xml'  | wc -l) -le $feed_lenght_min
 					then
+						rm 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml'
 						continue
 					fi
 				else
-					bot_print "$1" "arquivo "$TRACKER"."$NAME".xml não encontrado. Criando novo!"
+					bot_print "$1" "Gerando arquivo "$TRACKER"."$NAME".xml"
+					mv 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml'  'patch_feed/feed_'"$TRACKER"'.'"$NAME"'.xml'
 					
 				fi
 
-				mv 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml'  'patch_feed/feed_'"$TRACKER"'.'"$NAME"'.xml'
+				
 
 				;;
 
-			"_LINK_" )
-				bot_print "$1" "Verificando disponibilidade de $NAME $EPISODIO"
-
-				local status=$(curl -s --head "$(echo $LINK | sed 's/#EPKNIN/'"$EPISODIO"'/')" | head -n 1 | cut -d ' ' -f 2)
-				test $status -ne $headstatus_ok && continue
-
-				;;
 		esac
 		
 		
@@ -610,6 +603,18 @@ function feed_check(){
 			then
 				bot_print "$1" "Verificando disponibilidade de $NAME $EPISODIO"			
 				filters_feed "$1" "$TRACKER" "$EPISODIO" "$NAME"
+
+			elif test "$MODE" = "_LINK_"
+			then
+				bot_print "$1" "Verificando disponibilidade de $NAME $EPISODIO"
+				LINK_EPI="$(echo $LINK | sed 's/#EPKNIN/'"$EPISODIO"'/ ')"
+				status="$(curl -s --head "$LINK_EPI" | head -n 1 | cut -d ' ' -f 2)"
+				if test $status -ne $headstatus_ok
+				then
+					bot_print "$1" "$NAME $EPISODIO não disponível."
+					break
+				fi
+				echo $LINK_EPI > null_temp/LINK_TOR
 			fi
 
 			if test  "$(cat null_temp/LINK_TOR)"
@@ -621,11 +626,13 @@ function feed_check(){
 			    
 
 			   
-				if test "$CATEGORIA" = "Normal"
+				if test "$CATEGORIA" = "NORMAL"
 				then
 					cat $(echo Database/$DATABASE | sed 's/ //') | sed "s/EXPECT_EPI=$EPISODIO/EXPECT_EPI=$(($EPISODIO+1))/g ; s/ID=$ID/ID=$(($ID+1))/g" > null_temp/TEMP_DB
-			    		echo -ne "TOR>$ID:DIA>$(date +%D):TIME>$TIME_FEED_CHECK:NAME>$(cat null_temp/LINK_TOR | cut -d = -f 3 | sed 's/$//')\n" >> null_temp/TEMP_DB
-				elif test "$CATEGORIA" = "Serie"
+			    		echo -ne "TOR>$ID:DIA>$(date +%D):TIME>$TIME_FEED_CHECK:NAME>$NAME [$EPISODIO]\n" >> null_temp/TEMP_DB
+					EPISODIO=$(($EPISODIO+1))
+
+				elif test "$CATEGORIA" = "SERIE"
 				then
 					if test "$EPISODIO" -le 9
 					then
@@ -642,7 +649,6 @@ function feed_check(){
 				fi
 	
 			    	mv null_temp/TEMP_DB $(echo Database/$DATABASE | sed 's/ //')	
-			    	EPISODIO=$(($EPISODIO+1))
 			    	ID=$(($ID +1))
 			    	UPDATE_FEED=$(($UPDATE_FEED+1))
 
@@ -667,7 +673,7 @@ function automatic_bot(){
 		echo -e ".... Project KNiN   : Feed ....\n"
 		echo -e ".... Bem Vindo - Blastin ....\n"
 		echo -e "Horário de Início   : $date_time"
-		echo -e "\n-----------------------------------------------\n"
+		echo -e "\n- - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - -\n"
 		echo -e "TIME UPDATE NORMAL  : $TIME_UPDATE $TIME_NAME\n"
 		echo -e "TIME UPDATE SLOW    : $SLOW_BOT_TIME_UPDATE $TIME_NAME\n"
 		echo -e "TIME DATABASE UPDATE: $TIME_UPDATE_DATABASE\n"
@@ -690,6 +696,7 @@ function automatic_bot(){
 		    done
 		   
 		fi
+		echo -e "\n- - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - -\n"
 		 
 	fi
 
@@ -720,12 +727,12 @@ function automatic_bot(){
 
 			#Seguindo a regra de ser específicado  em conf/conf.script 
 		    	TIME_UPDATE_NEXT=$(($TIME_UPDATE * $TIME_SYSTEM))
-			bot_print "$1" "Próxima atualização : $(date -d "$TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)" "off sleep"
+			bot_print "$1" "Próxima atualização <!> $(date -d "$TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)" "off sleep"
 
 		else
 		    	#Seguindo a regra de ser específicado  em conf/conf.script 
 		    	TIME_UPDATE_NEXT=$(($SLOW_BOT_TIME_UPDATE * $TIME_SYSTEM)) 
-			bot_print "$1" "Próxima atualização : $(date -d "$SLOW_BOT_TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)" "off sleep"
+			bot_print "$1" "Próxima atualização <!> $(date -d "$SLOW_BOT_TIME_UPDATE $TIME_NAME - $BUFF_TIME_EXCESS seconds" +%H:%M:%S)" "off sleep"
 		fi
 
 
