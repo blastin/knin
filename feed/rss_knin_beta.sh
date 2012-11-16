@@ -44,6 +44,8 @@
 #------10/NOV/12:> Limpeza e atualização
 #------11/NOV/12:> Error na função torrent_get foi fixado
 #---------------:> Limpeza e atualização
+#------15/NOV/12:> BUG em função torrent_get resolvido
+#---------------:> Atualização e limpeza
 # INFO        :
 # -- -- [ "$1" -eq 1 ] : debug  < mod  echo -> stdout [screen] 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,7 +56,7 @@ declare -A  TRACKER_CONF_
 declare -A  LIST_FILTER_FEED
 declare -r  date_time=$(date +%H:%M:%S)
 declare -r  headstatus_ok=200
-declare -r  feed_lenght_min=4 #valor mínimo de linhas  a checar em diff
+declare -r  feed_lenght_min=8 #valor mínimo de linhas  a checar em diff
 
 declare     ACCOUNT_MDAN="$(grep '^ACCOUNT' conf/conf.script | cut -d = -f 2)"
 declare     PASSWORD_MDAN="$(grep '^PASSWD'  conf/conf.script  | cut -d = -f 2)"
@@ -93,34 +95,6 @@ function init(){
 	local SLOW_BOT_COUNT_HOUR=0
 	local SLOW_BOT_COUNT_DAY=0
 
-	#####################
-	#TODO: conf/feed.filters
-	#local LIST_TRACKER_COUNT=0
-
-	
-	#for LINE_ in $(seq $(grep '^[^#/]' conf/feed.filters | wc -l))
-	#do
-		#local TRACKER="$(grep "^$LINE_" conf/feed.filters | cut -d \; -f 2 | cut -d : -f 2)"
-		#LIST_FILTER_FEED["$TRACKER"]="$(grep "^$LINE_" conf/feed.filters | cut -d \; -f 3- | cut -d : -f 2-)"
-	#done
-	
-
-	#while :
-	#do
-	#	VAR_TEMP="$(grep '^LIST_OF_TRACKERS=' conf/conf.script | cut -d \= -f 2 | cut -d : -f "$(($LIST_TRACKER_COUNT+1))")"
-		
-
-	#	if test -n  "$VAR_TEMP"
-		#then		
-		#	LIST_TRACKER["$LIST_TRACKER_COUNT"]="$VAR_TEMP"
-		#	LIST_TRACKER=$(($LIST_TRACKER_COUNT+1))
-		
-		#else
-		#	break
-		#fi
-	#done
-	#####################
-
 	while :
 	do
 		VAR_TEMP="$(echo $SLOW_BOT_HOUR_CONF_SCRIPT | cut -d : -f "$(($SLOW_BOT_COUNT_HOUR+1))")"
@@ -150,7 +124,8 @@ function init(){
 			break
 		fi
 	done
-	#
+
+	
 
 }
 
@@ -251,7 +226,7 @@ function filters_feed(){ #todos filters ficaram aqui até resolver conf/feed.fil
 }
 
 
-function conf_get(){
+function database_get(){
 
 	local TRACKER_ADD=0
 
@@ -261,64 +236,52 @@ function conf_get(){
 	do
 		if test "$LINE_" -gt "$INDICE_TRACKER_CONF"
 		then
-			bot_print "$1" "ERROR: TRACKER_CONF estou limite da variável INDICE_TRACKER_CONF em função conf_get"
+			bot_print "$1" "ERROR: TRACKER_CONF estou limite da variável INDICE_TRACKER_CONF em função database_get"
 			exit 1
 		fi
 
 
 		TRACKERS_CONF_["$TRACKER_ADD"]="$(grep "^$LINE_" Database/database.db | cut -d \; -f 2 | cut -d : -f 2)"
-		#test "$1" != "--quiet" && echo "TRACKERS_CONF_[$TRACKER_ADD] : ${TRACKERS_CONF_["$TRACKER_ADD"]} "
 		TRACKER_ADD=$(($TRACKER_ADD+1))		
 		#MODE FEED ou link
 
 		TRACKERS_CONF_["$TRACKER_ADD"]="$(grep "^$LINE_" Database/database.db | cut -d \; -f 3 | cut -d : -f 2)"
-		#test "$1" != "--quiet" && echo "TRACKERS_CONF_[$TRACKER_ADD] : ${TRACKERS_CONF_["$TRACKER_ADD"]} "
 		TRACKER_ADD=$(($TRACKER_ADD+1))
 		#nome do tracker
 
 		TRACKERS_CONF_["$TRACKER_ADD"]="$(grep "^$LINE_" Database/database.db | cut -d \; -f 4 | cut -d : -f 2)"
-		#test "$1" != "--quiet" && echo "TRACKERS_CONF_[$TRACKER_ADD] : ${TRACKERS_CONF_["$TRACKER_ADD"]} "
 		TRACKER_ADD=$(($TRACKER_ADD+1))
 		#Tipo do tracker ; Público ou Privado
 
 		TRACKERS_CONF_["$TRACKER_ADD"]="$(grep "^$LINE_" Database/database.db | cut -d \; -f 5 | cut -d : -f 2)"
-		#test "$1" != "--quiet" && echo "TRACKERS_CONF_[$TRACKER_ADD] : ${TRACKERS_CONF_["$TRACKER_ADD"]} "
 		TRACKER_ADD=$(($TRACKER_ADD+1))
 		#Nome do anime
 
 		TRACKERS_CONF_["$TRACKER_ADD"]="$(grep "^$LINE_" Database/database.db | cut -d \; -f 6 | cut -d : -f 2)"
-		#test "$1" != "--quiet" && echo "TRACKERS_CONF_[$TRACKER_ADD] : ${TRACKERS_CONF_["$TRACKER_ADD"]} "
 		TRACKER_ADD=$(($TRACKER_ADD+1))
 		#Categoria
 
-
 		TRACKERS_CONF_["$TRACKER_ADD"]="$(grep "^$LINE_" Database/database.db | cut -d \; -f 7 | cut -d : -f 2)"
-		#test "$1" != "--quiet" && echo "TRACKERS_CONF_[$TRACKER_ADD] : ${TRACKERS_CONF_["$TRACKER_ADD"]} "
 		TRACKER_ADD=$(($TRACKER_ADD+1))
 		#Dia específico
 
 		TRACKERS_CONF_["$TRACKER_ADD"]="$(grep "^$LINE_" Database/database.db | cut -d \; -f 8 | cut -d : -f 2)"
-		#test "$1" != "--quiet" && echo "TRACKERS_CONF_[$TRACKER_ADD] : ${TRACKERS_CONF_["$TRACKER_ADD"]} "
 		TRACKER_ADD=$(($TRACKER_ADD+1))
 		#Horário de início específico
 
 		TRACKERS_CONF_["$TRACKER_ADD"]="$(grep "^$LINE_" Database/database.db | cut -d \; -f 9 | cut -d : -f 2)"	
-		#test "$1" != "--quiet" && echo "TRACKERS_CONF_[$TRACKER_ADD] : ${TRACKERS_CONF_["$TRACKER_ADD"]} "
 		local DB_TEMP_INDICE="$TRACKER_ADD"
 		TRACKER_ADD=$(($TRACKER_ADD+1))
 		#Database do anime
 
 		TRACKERS_CONF_["$TRACKER_ADD"]="$(grep "^$LINE_" Database/database.db | cut -d \; -f 10 | cut -d : -f 2)"
-		#test "$1" != "--quiet" && echo "TRACKERS_CONF_[$TRACKER_ADD] : ${TRACKERS_CONF_["$TRACKER_ADD"]} "
 		TRACKER_ADD=$(($TRACKER_ADD+1))
 		#cookie
 
 		TRACKERS_CONF_["$TRACKER_ADD"]="$(grep "^$LINE_" Database/database.db | cut -d \; -f 11 | cut -d : -f 2-)"
-		#test "$1" != "--quiet" && echo "TRACKERS_CONF_[$TRACKER_ADD] : ${TRACKERS_CONF_["$TRACKER_ADD"]} "
 		TRACKER_ADD=$(($TRACKER_ADD+1))
 		#link
 
-		#bot_print "$1" "${TRACKERS_CONF_[$(($(($LINE_-1))* $INDICE_TRACKER_CONF + ${INDICE_TRACKER_CHAVE['COOKIE']}))]}"
 		if test "${TRACKERS_CONF_[$(($(($LINE_-1))* $INDICE_TRACKER_CONF + ${INDICE_TRACKER_CHAVE['COOKIE']}))]}" = "YES"
 		then
 			if test "$LINE_" -eq 1
@@ -366,6 +329,8 @@ function torrent_file_get(){
 	if test -n "$1" -a -n "$2"
 	then
 		declare MODE
+		declare name_torrent
+
 		case "$1" in 
 
 		"Private")
@@ -374,9 +339,10 @@ function torrent_file_get(){
 
 			"MDAN" ) 
 
-				MODE="--load-cookies cookie/$2.xml"
+				MODE="--load-cookies cookie/$2.cookie"
+				name_torrent="$(cat null_temp/LINK_TOR | cut -d \= -f 3 | sed 's/\.torrent.*/\.torrent/')"
 
-				#wget --limit-rate=25k --load-cookies 'cookie/'"$TRACKER"'.cookie' -qo logs/logfile -i null_temp/LINK_TOR
+				#wget --limit-rate=25k --load-cookies 'cookie/'"$2"'.cookie' --directory-prefix=./rtorrent_watch/ -qo logs/logfile -i null_temp/LINK_TOR
 			;;	
 
 			"SUPERSEEDS" )
@@ -408,7 +374,13 @@ function torrent_file_get(){
 			
 		;;	
 		esac
-			wget --limit-rate=25k $MODE --directory-prefix=rtorrent_watch/ --quiet --output-file=logs/logfile --input-file=null_temp/LINK_TOR
+			
+			if test -n "$name_torrent"
+			then
+				wget --limit-rate=25k $MODE -O 'rtorrent_watch/'"$name_torrent"'' --quiet --output-file=logs/logfile --input-file=null_temp/LINK_TOR
+			else 
+				wget --limit-rate=25k $MODE --directory-prefix=rtorrent_watch/ --quiet --output-file=logs/logfile --input-file=null_temp/LINK_TOR
+			fi
 
 	else
 		echo "ERROR : argumento 1 e 2 em função torrent_file_get não especificado"
@@ -473,7 +445,7 @@ function cookie_(){
 
 
 
-function feed_check(){
+function bot_check(){
 
 
 	if test "$(date '+%H')" -ge "$NEXT_TIME_UPDATE_DATABASE" #Atualização do banco de dados
@@ -483,7 +455,7 @@ function feed_check(){
 		if test "$FLAG_DATABASE_UPDATE" -eq 1
 		then
 			bot_print "$1" "Atualizado informações do banco de dados"
-			conf_get "$1"	
+			database_get "$1"	
 
 			for LINE_ in $(seq ${#LIST_TRACKER_COOKIE[*]})
 			do
@@ -554,22 +526,25 @@ function feed_check(){
 
 			"_FEED_" )
 				
-				if test "$COOKIE" = "YES"
-				then
-						curl --silent -o 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml' --limit-rate 10k --cookie 'cookie/'"$TRACKER"'.cookie' "$LINK"
-						test ! -f 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml' && \
-						wget -qO 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml' --limit-rate=10k --load-cookies 'cookie/'"$TRACKER"'.cookie' "$LINK"
+				case "$COOKIE" in
 
-						
-				elif test "$COOKIE" =  "NO"
-				then
 
-						wget -qO 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml' --limit-rate=10k "$LINK"
+				"YES" )
+					wget -qO 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml' --limit-rate=10k --load-cookies 'cookie/'"$TRACKER"'.cookie' "$LINK"
+					;;
 
-				else
-						bot_print "$1" "ERROR: in COOKIE : cookie diferente de NO ou Yes"
-						exit 1
-				fi
+
+				"NO" )
+
+					wget -qO 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml' --limit-rate=10k "$LINK"
+					;;
+
+				* )
+
+					bot_print "$1" "ERROR: in COOKIE : cookie diferente de NO ou Yes"
+					exit 1
+					;;
+				esac
 
 
 				if test -f 'patch_feed/feed_'"$TRACKER"'.'"$NAME"'.xml'
@@ -578,19 +553,19 @@ function feed_check(){
 					then
 						rm 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml'
 						continue
+					else
+						mv 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml'  'patch_feed/feed_'"$TRACKER"'.'"$NAME"'.xml'
 					fi
+					
 				else
 					bot_print "$1" "Gerando arquivo "$TRACKER"."$NAME".xml"
 					mv 'patch_feed/feed_check_'"$TRACKER"'.'"$NAME"'.xml'  'patch_feed/feed_'"$TRACKER"'.'"$NAME"'.xml'
 					
 				fi
 
-				
-
-				;;
+			;;
 
 		esac
-		
 		
 		while :
 	    	do
@@ -623,9 +598,7 @@ function feed_check(){
 				bot_print "$1" "$NAME $EPISODIO foi encontrado com sucesso"
 			   		
 				torrent_file_get "$TYPE" "$TRACKER"
-			    
-
-			   
+			    	   
 				if test "$CATEGORIA" = "NORMAL"
 				then
 					cat $(echo Database/$DATABASE | sed 's/ //') | sed "s/EXPECT_EPI=$EPISODIO/EXPECT_EPI=$(($EPISODIO+1))/g ; s/ID=$ID/ID=$(($ID+1))/g" > null_temp/TEMP_DB
@@ -643,7 +616,7 @@ function feed_check(){
 
 					cat $(echo Database/$DATABASE | sed 's/ //') | sed "s/EXPECT_EPI=.*/EXPECT_EPI=$EPISODIO/g ; s/ID=$ID/ID=$(($ID+1))/g" > null_temp/TEMP_DB
 					
-			    		echo -ne "TOR>$ID:DIA>$(date +%D):TIME>$TIME_FEED_CHECK:NAME>$VAR_TEMP_GLOBAL\n" >> null_temp/TEMP_DB
+			    		echo -ne "\nTOR>$ID:DIA>$(date +%D):TIME>$TIME_FEED_CHECK:NAME>$VAR_TEMP_GLOBAL\n" >> null_temp/TEMP_DB
 					VAR_TEMP_GLOBAL=0
 
 				fi
@@ -657,7 +630,6 @@ function feed_check(){
 				break
 			fi
 
-
 		done #while :
 
 	done #for LINE_ in $(seq $(cat Database/database.db | cut -d : -f 3 | wc -l))
@@ -666,41 +638,7 @@ function feed_check(){
 
 function automatic_bot(){
 
-	init $1
-
-	if test "$1" != "--quiet"
-		then
-		echo -e ".... Project KNiN   : Feed ....\n"
-		echo -e ".... Bem Vindo - Blastin ....\n"
-		echo -e "Horário de Início   : $date_time"
-		echo -e "\n- - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - -\n"
-		echo -e "TIME UPDATE NORMAL  : $TIME_UPDATE $TIME_NAME\n"
-		echo -e "TIME UPDATE SLOW    : $SLOW_BOT_TIME_UPDATE $TIME_NAME\n"
-		echo -e "TIME DATABASE UPDATE: $TIME_UPDATE_DATABASE\n"
-		echo -e "TIME CONF UPDATE    : $TIME_UPDATE_CONF\n"
-		if test "${#SLOW_BOT_HOUR[*]}" -ne 0
-		then
-			echo -ne "SLOW CPU            : "
-			for LINE_ in $(seq ${#SLOW_BOT_HOUR[*]})
-			do
-				echo -ne "(${SLOW_BOT_HOUR["$(($LINE_-1))"]}:00)" 
-			done
-			echo -e "\n"
-		fi
-		if test "${#SLOW_BOT_DAY[*]}" -ne 0
-		then
-		    echo -ne "SLOW CPU DAY        : "
-		    for LINE_ in $(seq ${#SLOW_BOT_DAY[*]})
-		    do
-		    	echo -ne "(${SLOW_BOT_DAY["$(($LINE_-1))"]})" 
-		    done
-		   
-		fi
-		echo -e "\n- - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - -\n"
-		 
-	fi
-
-	conf_get "$1"
+	database_get "$1"
 	NEXT_TIME_UPDATE_DATABASE="$(date -d "$TIME_UPDATE_DATABASE" +'%H')"
 
 	for LINE_ in $(seq ${#LIST_TRACKER_COOKIE[*]})
@@ -710,7 +648,7 @@ function automatic_bot(){
 
 	while :
 	do
-		feed_check "$1"
+		bot_check "$1"
 
 		TIME_UPDATE_NEXT_BEFORE_FEED_CHECK=$(date +%s)
 
@@ -747,6 +685,40 @@ function automatic_bot(){
 }
 
 ################### INICIALIZAÇÃO #################
+init $1
+
+
+if test "$1" != "--quiet"
+	then
+	echo -e ".... Project KNiN   : Feed ....\n"
+	echo -e ".... Bem Vindo - Blastin ....\n"
+	echo -e "Horário de Início   : $date_time"
+	echo -e "\n- - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - -\n"
+	echo -e "TIME UPDATE NORMAL  : $TIME_UPDATE $TIME_NAME\n"
+	echo -e "TIME UPDATE SLOW    : $SLOW_BOT_TIME_UPDATE $TIME_NAME\n"
+	echo -e "TIME DATABASE UPDATE: $TIME_UPDATE_DATABASE\n"
+	echo -e "TIME CONF UPDATE    : $TIME_UPDATE_CONF\n"
+	if test "${#SLOW_BOT_HOUR[*]}" -ne 0
+	then
+		echo -ne "SLOW CPU            : "
+		for LINE_ in $(seq ${#SLOW_BOT_HOUR[*]})
+		do
+			echo -ne "(${SLOW_BOT_HOUR["$(($LINE_-1))"]}:00)" 
+		done
+		echo -e "\n"
+	fi
+	if test "${#SLOW_BOT_DAY[*]}" -ne 0
+	then
+	    echo -ne "SLOW CPU DAY        : "
+	    for LINE_ in $(seq ${#SLOW_BOT_DAY[*]})
+	    do
+	    	echo -ne "(${SLOW_BOT_DAY["$(($LINE_-1))"]})" 
+	    done
+	   
+	fi
+	echo -e "\n- - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - -\n"
+ 	
+fi
 
 
 if test "$2" = "-q" -o "$1" = "--quiet"
@@ -756,7 +728,7 @@ elif test "$2" = "-d" -o "$1" = "--debug"
 then
 	automatic_bot "--debug"
 else
-	automatic_bot "--verbose"
+	automatic_bot "--verbose"	
 fi
 
 exit 0
