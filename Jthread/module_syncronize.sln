@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "module_syncronize", "module_syncronize\module_syncronize.vcxproj", "{04A1DA48-F982-446E-9B98-A0C320474D44}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{04A1DA48-F982-446E-9B98-A0C320474D44}.Debug|Win32.ActiveCfg = Debug|Win32
+		{04A1DA48-F982-446E-9B98-A0C320474D44}.Debug|Win32.Build.0 = Debug|Win32
+		{04A1DA48-F982-446E-9B98-A0C320474D44}.Release|Win32.ActiveCfg = Release|Win32
+		{04A1DA48-F982-446E-9B98-A0C320474D44}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
