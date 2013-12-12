@@ -10,7 +10,7 @@
 using namespace std;
 
 /*
- * 
+ * Protótipo : simulador
  */
 int main(int argc, char** argv) {
 
