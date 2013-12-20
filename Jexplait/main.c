@@ -10,7 +10,8 @@
 #include "Header.h"
 #include <time.h>
 
-#define MAX_ 21
+#define MAX_ 1350
+ static int value=0 ;
 /*
  * 
  */
@@ -24,7 +25,7 @@ int main(int argc, char** argv) {
     short int slot_open;
     int rand_FIX;  // numero aleatório da estrutura passiva
     int rand_NEXT; // numero aleatório da estrutura ativa
-    
+   
     for(x=0,increment=0;x<MAX_;x++)
     {
         Struct_t[x].IN = C_OPEN;
@@ -57,7 +58,7 @@ int main(int argc, char** argv) {
             {
                 do
                 {
-                    rand_FIX  = rand()%MAX_+0;
+                    rand_FIX  = rand()%MAX_;
                     if(rand_acess_fix[rand_FIX] == C_OFF)
                         continue;
                     else
@@ -65,10 +66,10 @@ int main(int argc, char** argv) {
                 
                 }while(1); 
                 
-                printf("rand_FIX %d\t",rand_FIX);
+               // printf("rand_FIX %d\t",rand_FIX);
                 
                 do{
-                    rand_NEXT = rand()%MAX_+0;
+                    rand_NEXT = rand()%MAX_;
                     if(rand_acess_next[rand_NEXT] == C_OFF)
                         continue;
                     else
@@ -76,116 +77,84 @@ int main(int argc, char** argv) {
                 }while(1);
                 
                 
-                printf("rand_NEXT %d\n",rand_NEXT);
+               // printf("rand_NEXT %d\n",rand_NEXT);
                 
                 
                 if (Struct_t[rand_FIX].IN == C_OPEN && Struct_t[rand_FIX].CLOSE == C_OPEN && Struct_t[rand_NEXT].CLOSE == C_OPEN )
                 {
                     
-                    if(MAX_&1)
+                    for(x=0,count_check_struct=0;x<MAX_;x++)
                     {
-                        for(x=0,count_check_struct=0;x<MAX_;x++)
+                        if(Struct_t[x].OUT == C_OPEN)
                         {
-                            if(Struct_t[x].OUT == C_OPEN)
-                            {
-                                slot_open = x;
-                                count_check_struct++;
-                                printf("SLot aberto para entrada  total : %d <<\n", count_check_struct);
-                                
-                            }
+                            slot_open = x;
+                            count_check_struct++;
+                           // printf("SLot aberto para entrada  total : %d <<\n", count_check_struct);
+
                         }
-                        if(count_check_struct == 1)
-                        {
-                            rand_NEXT = slot_open;
-                            printf("ultimo slot aberto , prosseguir \n");
-                            break;
-                        }
-                    
+                    }
+                    if(count_check_struct == 1)
+                    {
+                        rand_NEXT = slot_open;
+                        //printf("ultimo slot aberto , prosseguir \n");
+                        break;
                     }
                     
-                    printf("Struct_t[%d].IN : open \n",rand_FIX);
-                    if (Struct_t[rand_NEXT].OUT == C_OPEN)
+                   
+                    if (Struct_t[rand_NEXT].OUT == C_OPEN && rand_FIX != rand_NEXT)
                     {
-                        printf("Struct_t[%d].OUT : open\n",rand_NEXT);
-                        if(rand_FIX != rand_NEXT)
-                        {
-                            if(!recursive_Fscheck(&Struct_t,rand_FIX,rand_NEXT))
-                            {
-                                printf("recursive saindo\n");
-                                break;
-                            }
-                            printf("recursive saindo\n");
-                        }
+                       // printf("Struct_t[%d].OUT : open\n",rand_NEXT);
+                        //printf("Struct_t[%d].IN : open \n",rand_FIX);
+                        if(!recursive_Fscheck(&Struct_t,rand_FIX,rand_NEXT))
+                                break;    
                     }
                 }
             }while(1);
 
-            //printf("Struct_t[%d].IN : close\t",rand_FIX);
+            
             Struct_t[rand_FIX].IN = C_CLOSE;
-             rand_acess_fix[rand_FIX] = C_OFF;
-            //printf("Struct_t[%d].OUT : close\n",rand_NEXT);
+            rand_acess_fix[rand_FIX] = C_OFF;
+            
             Struct_t[rand_NEXT].OUT = C_CLOSE;
-             rand_acess_next[rand_NEXT] = C_OFF;
-            //printf("Struct_t[%d] conectou com Struct_t[%d]\n",rand_FIX,rand_NEXT);
+            rand_acess_next[rand_NEXT] = C_OFF;
+            
             Struct_t[rand_FIX].FSIN = rand_NEXT;
             Struct_t[rand_NEXT].FSOUT = rand_FIX;
             
             if (Struct_t[rand_FIX].IN == C_CLOSE && Struct_t[rand_FIX].OUT == C_CLOSE )
-            {
-                printf("Struct_t[%d] Foi fechada \n",rand_FIX);
                 Struct_t[rand_FIX].CLOSE = C_CLOSE;
                
-            }
             if (Struct_t[rand_NEXT].IN == C_CLOSE && Struct_t[rand_NEXT].OUT == C_CLOSE )
-            {
-                 printf("Struct_t[%d] Foi fechada \n",rand_NEXT);
                 Struct_t[rand_NEXT].CLOSE = C_CLOSE;
-            }
-            for(x=0;x<MAX_;x++)
-            {
-                printf("Struct_t[%d]:IN[%s] OUT[%s] CN[%d]:%d  COUT[%d]:%d CLOSE:%d\n",x,(Struct_t[x].IN == C_OPEN) ? "OP" : "CL",(Struct_t[x].OUT == C_OPEN) ? "OP" : "CL",x,Struct_t[x].FSIN,x,Struct_t[x].FSOUT,Struct_t[x].CLOSE);
-                
-        
-            }
-            printf("rand_acess_fix[");
-            for(x=0;x<MAX_;x++)
-            {
-                printf("%d,",rand_acess_fix[x]);
-            }
-            printf("]\nrand_acess_next[");
-            for(x=0;x<MAX_;x++)
-            {
-                printf("%d,",rand_acess_next[x]);
-            }
-            putchar(']');
-            putchar('\n');
-            /*if (Struct_t[rand_NEXT].IN == C_CLOSE && Struct_t[rand_NEXT].OUT == C_CLOSE )
-            {
-                
-                Struct_t[rand_NEXT].CLOSE = C_CLOSE;
-            }*/
-          
         }
         
     };
-    getchar();
+    
+    for(x=0;x<MAX_;x++)
+    {
+        printf("Struct_t[%d]:IN[%s] OUT[%s] CN[%d]:%d  COUT[%d]:%d CLOSE:%d\n",x,(Struct_t[x].IN == C_OPEN) ? "OP" : "CL",(Struct_t[x].OUT == C_OPEN) ? "OP" : "CL",x,Struct_t[x].FSIN,x,Struct_t[x].FSOUT,Struct_t[x].CLOSE);
+    }
+    printf("rand_acess_fix[");
+    for(x=0;x<MAX_;x++)
+    {
+        printf("%d,",rand_acess_fix[x]);
+    }
+    printf("]\nrand_acess_next[");
+    for(x=0;x<MAX_;x++)
+    {
+        printf("%d,",rand_acess_next[x]);
+    }
+    putchar(']');
+    putchar('\n');
+    printf("recursive on  : %d\n",++value);
     return (EXIT_SUCCESS);
 }
 
 int 
 recursive_Fscheck(_base * struct_base,int fix,int next)
 {
-    static int value=0 ;
-    
-    printf("recursive on  : %d\n",++value);
-    
-    /*Esta função entra no lugar de :
-     * 
-     * 
-      if(Struct_t[rand_FIX].FSOUT != Struct_t[rand_NEXT].FSIN)
-     
-     */
-    
+    ++value;
+   
     if(fix == (struct_base+next)->FSIN)
         return 1;
     else if((struct_base+next)->IN == C_CLOSE)
