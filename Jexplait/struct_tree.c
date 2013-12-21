@@ -1,6 +1,5 @@
 #include "tree.h"
 #include <time.h>
-#include <stdio.h>
 
 static int 
 recursive_tree(__JTREE_EXPLAIT *,__JTHREE_EXPLAIT_INFO*,const int ,int );
@@ -26,19 +25,12 @@ tree_struct(__JTREE_EXPLAIT * __jtree_struct, __JTHREE_EXPLAIT_INFO * __JINFO, c
          (__jtree_struct+x)->FSOUT = --__JCOUNT_GENERIC;
          *(__JINFO->__JINFO_INIT+x) = x;
          *(__JINFO->__JINFO_NEXT+x) = x;
-        
     }
     
     while(true)
     {
-        for(x=0,__JCOUNT_GENERIC=0;x < __jlength; x++)
-            {
-                if((__jtree_struct+x)->CLOSE == C_CLOSE)
-                    ++__JCOUNT_GENERIC;
-            }
-        if(__JCOUNT_GENERIC == __jlength)    
-            break;   
-      
+        if(! __JINFO->__JINFO_INIT_COUT && ! __JINFO->__JINFO_NEXT_COUT)
+            break; 
         else 
         {
             do
@@ -52,14 +44,13 @@ tree_struct(__JTREE_EXPLAIT * __jtree_struct, __JTHREE_EXPLAIT_INFO * __JINFO, c
                         continue;
                   
                   if ((__jtree_struct+__jrand_next)->CLOSE == C_OPEN)
-                  {
-                                        
+                  {               
                     if(__JINFO->__JINFO_INIT_COUT == 1 && __JINFO->__JINFO_NEXT_COUT == 1 )
                         break;
                     
                     else if ((__jtree_struct+__jrand_next)->OUT == C_OPEN && __jrand_init != __jrand_next)
                         if(!recursive_tree(__jtree_struct,__JINFO,__jrand_init,__jrand_next))
-                                break;    
+                                break;
                  }
             }while(true);
 
@@ -79,10 +70,8 @@ tree_struct(__JTREE_EXPLAIT * __jtree_struct, __JTHREE_EXPLAIT_INFO * __JINFO, c
                
             if ((__jtree_struct+__jrand_next)->IN == C_CLOSE && (__jtree_struct+__jrand_next)->OUT == C_CLOSE )
                 (__jtree_struct+__jrand_next)->CLOSE = C_CLOSE;
-        }
-        
+        }  
     };
-    
     return 0;
 }
 
@@ -90,7 +79,6 @@ static int
 recursive_tree(__JTREE_EXPLAIT * __jtree_struct,__JTHREE_EXPLAIT_INFO * __JINFO,const int  __jinit,int __jnext)
 {
     (__JINFO->__JRECURSIVE)++;
-    
     if(__jinit == (__jtree_struct+__jnext)->FSIN)
         return 1;
     else if((__jtree_struct+__jnext)->IN == C_CLOSE)
@@ -101,5 +89,4 @@ recursive_tree(__JTREE_EXPLAIT * __jtree_struct,__JTHREE_EXPLAIT_INFO * __JINFO,
     }
     else
         return 0;
-    
 }

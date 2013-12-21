@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include "tree.h"
 
-#define MAX_ 98810
+#define MAX_ 1000
 /*
  * 
  */
@@ -24,8 +24,8 @@ int main(int argc, char** argv) {
     info.__JINFO_INIT = (int*)malloc(MAX_*sizeof(*info.__JINFO_INIT));
     info.__JINFO_NEXT = (int*)malloc(MAX_*sizeof(*info.__JINFO_NEXT));
     
+     printf("Iniciando conexões ....\n");
     tree_struct(struct_base,&info,MAX_);
-   
     printf("Conexão realizada com sucesso\n");
     
     fprintf(file,"Foi necessário entrar %d vezes na função recursiva\n",info.__JRECURSIVE);
