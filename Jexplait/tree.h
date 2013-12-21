@@ -26,5 +26,18 @@ typedef struct {
     
 }__JTREE_EXPLAIT;
 
+
+typedef struct{
+    
+    unsigned int __JRECURSIVE;
+    int * __JINFO_INIT;
+    int * __JINFO_NEXT;
+    unsigned int __JINFO_INIT_COUT;
+    unsigned int __JINFO_NEXT_COUT;
+    
+}__JTHREE_EXPLAIT_INFO;
+
+
+
 int 
-tree_struct(__JTREE_EXPLAIT * ,const int,int*,int*);
+tree_struct(__JTREE_EXPLAIT * ,__JTHREE_EXPLAIT_INFO *,const int);

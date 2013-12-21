@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include "tree.h"
 
-#define MAX_ 14578
+#define MAX_ 98810
 /*
  * 
  */
@@ -18,26 +18,30 @@ int main(int argc, char** argv) {
     __JTREE_EXPLAIT struct_base[MAX_];
     FILE *file;
     file = fopen("return.txt","w");
-    int x,*rand_acess_fix,*rand_acess_next,count1,count2;
+    int x,count1,count2;
+    __JTHREE_EXPLAIT_INFO info;
     
-    rand_acess_fix=(int*)malloc(MAX_*sizeof(*rand_acess_fix));
-    rand_acess_next=(int*)malloc(MAX_*sizeof(*rand_acess_next));
+    info.__JINFO_INIT = (int*)malloc(MAX_*sizeof(*info.__JINFO_INIT));
+    info.__JINFO_NEXT = (int*)malloc(MAX_*sizeof(*info.__JINFO_NEXT));
     
-    tree_struct(struct_base,MAX_,rand_acess_fix,rand_acess_next);
+    tree_struct(struct_base,&info,MAX_);
    
-   for(x=0;x<MAX_;x++)
-    {  
-     fprintf(file,"Struct_t[%d]:IN[%s] OUT[%s] CN[%d]:%d  COUT[%d]:%d CLOSE:%d\n",x,(struct_base[x].IN == C_OPEN) ? "OP" : "CL",(struct_base[x].OUT == C_OPEN) ? "OP" : "CL",x,struct_base[x].FSIN,x,struct_base[x].FSOUT,struct_base[x].CLOSE);
-    }
+    printf("Conexão realizada com sucesso\n");
+    
+    fprintf(file,"Foi necessário entrar %d vezes na função recursiva\n",info.__JRECURSIVE);
+    
+    for(x=0;x<MAX_;x++) 
+        fprintf(file,"Struct[%5.1d] >> %5.1d | Struct[%5.1d] << %5.1d | status:%s\n",x,struct_base[x].FSIN,x,struct_base[x].FSOUT,(struct_base[x].CLOSE)? "fechada" : "aberta");
     
      for(x=count1=count2=0;x<MAX_;x++)
      {
-         count1+= *(rand_acess_fix+x);
-         count2+= *(rand_acess_next+x);
+         count1+= *(info.__JINFO_INIT+x);
+         count2+= *(info.__JINFO_NEXT+x);
      }
     
     if((count1 + count2) == -(MAX_*2))
-        printf("sucesso\n");
+        printf("sucesso programa finalizado\n");
+    
     
     fclose(file);
     /*printf("rand_acess_fix[");
