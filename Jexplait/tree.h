@@ -5,16 +5,16 @@
  * Created on 19 de Dezembro de 2013, 20:11
  */
 
-#ifndef HEADER_H
-#define	HEADER_H
 
-
+#undef true
+#undef false
 enum _enum {
-    
+        C_OFF=-1,
         C_OPEN=0,
-        C_CLOSE
+        C_CLOSE,
+        false=0,
+        true
 };
-    
     
 typedef struct {
     
@@ -24,7 +24,7 @@ typedef struct {
     unsigned int FSIN; // FSIN<FIle Struct IN> ">>" inteiro para  estrutura na camada a qual se interligou  . 
     unsigned int FSOUT;// FSIN<FIle Struct OUT> "<<" inteiro para  estrutura na camada a qual esta interligada 
     
-}_base;
+}__JTREE_EXPLAIT;
 
-#endif	/* HEADER_H */
-
+int 
+tree_struct(__JTREE_EXPLAIT * ,const int,int*,int*);
