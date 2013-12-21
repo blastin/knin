@@ -4,7 +4,12 @@
  *
  * Created on 19 de Dezembro de 2013, 20:06
  */
-
+/*
+ ERROR:
+ BUFFER OVERFLOW ACIMA DE 199.999 LIGAMENTOS
+ * ESTUDAR CASO
+ 
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "tree.h"
@@ -16,16 +21,18 @@ int main(int argc, char** argv) {
      if(argc>1)   
          MAX_ = atoi( *(argv+1));
      else
-         MAX_ = 4;
+         MAX_ = 500000;
     
     FILE *file;
     file = fopen("return.txt","w");
-    int x,count1,count2;
+    unsigned int x,count1,count2;
      double time_end;
     clock_t time_over,time_init;
     
     __JTHREE_EXPLAIT_INFO info;
-    __JTREE_EXPLAIT struct_base[MAX_];
+    __JTREE_EXPLAIT * struct_base;
+    struct_base = (__JTREE_EXPLAIT *)malloc(MAX_ * sizeof(* struct_base));
+    
     info.__JINFO_INIT = (int*)malloc(MAX_*sizeof(*info.__JINFO_INIT));
     info.__JINFO_OUT = (int*)malloc(MAX_*sizeof(*info.__JINFO_OUT));
       
@@ -38,7 +45,7 @@ int main(int argc, char** argv) {
     fprintf(file,"Tempo total : %f segundos ou %f minutos ou %f horas\n",time_end,time_end/60,time_end/(60*60));
     fprintf(file,"Foi necessário entrar %d vezes na função recursiva\n",info.__JRECURSIVE);
     
-    for(x=0;x<MAX_;x++) 
+   for(x=0;x<MAX_;x++) 
         fprintf(file,"Struct[%8.1d] >> %8.1d | Struct[%8.1d] << %8.1d | status:%s\n",x,struct_base[x].FSIN,x,struct_base[x].FSOUT,(struct_base[x].CLOSE)? "fechada" : "aberta");
     
      for(x=count1=count2=0;x<MAX_;x++)

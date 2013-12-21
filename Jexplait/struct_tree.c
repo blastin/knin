@@ -7,9 +7,9 @@ recursive_tree(__JTREE_EXPLAIT *,__JTHREE_EXPLAIT_INFO*,const unsigned int ,unsi
 int 
 tree_struct(__JTREE_EXPLAIT * __jtree_struct, __JTHREE_EXPLAIT_INFO * __JINFO, const unsigned int  __jlength) {
    
-    register int  x,__JCOUNT_GENERIC;// faz trabalhos genéricos 
-    unsigned int  __jrand_init;  // numero aleatório da estrutura ativa
-    unsigned int  __jrand_out; // numero aleatório da estrutura passiva
+    register unsigned int  x,__JCOUNT_GENERIC;// faz trabalhos genéricos 
+    register int  __jrand_init;  // numero aleatório da estrutura ativa
+    register int  __jrand_out; // numero aleatório da estrutura passiva
     
     __JINFO->__JINFO_INIT_COUT = __JINFO->__JINFO_OUT_COUT =  __jlength;
     __JINFO->__JRECURSIVE = 0;
@@ -33,14 +33,22 @@ tree_struct(__JTREE_EXPLAIT * __jtree_struct, __JTHREE_EXPLAIT_INFO * __JINFO, c
         {
             do
             {
+                do{
                   __jrand_init  = rand()%__jlength;
                   if( *(__JINFO->__JINFO_INIT+__jrand_init) == C_OFF)
                         continue;
-                   
+                  else 
+                      break;
+                }while(true);
+                
+                do{
                   __jrand_out = rand()%__jlength;
                   if( *(__JINFO->__JINFO_OUT+ __jrand_out) == C_OFF)
                         continue;
-                  
+                  else 
+                      break;
+                }while(true);
+                
                   if ((__jtree_struct+__jrand_out)->CLOSE == C_OPEN)
                   {               
                     if(__JINFO->__JINFO_INIT_COUT == 1 && __JINFO->__JINFO_OUT_COUT == 1 )
@@ -49,8 +57,6 @@ tree_struct(__JTREE_EXPLAIT * __jtree_struct, __JTHREE_EXPLAIT_INFO * __JINFO, c
                     else if ((__jtree_struct+__jrand_out)->OUT == C_OPEN && __jrand_init != __jrand_out)
                         if(!recursive_tree(__jtree_struct,__JINFO,__jrand_init,__jrand_out))
                                 break;
-                    else
-                        continue;
                  }
             }while(true);
 
