@@ -2,18 +2,16 @@
 #include <time.h>
 
 static int 
-recursive_tree(__JTREE_EXPLAIT *,__JTHREE_EXPLAIT_INFO*,const int ,int );
+recursive_tree(__JTREE_EXPLAIT *,__JTHREE_EXPLAIT_INFO*,const unsigned int ,unsigned int );
 
 int 
-tree_struct(__JTREE_EXPLAIT * __jtree_struct, __JTHREE_EXPLAIT_INFO * __JINFO, const int  __jlength) {
+tree_struct(__JTREE_EXPLAIT * __jtree_struct, __JTHREE_EXPLAIT_INFO * __JINFO, const unsigned int  __jlength) {
    
-    srand (time(NULL));
-    register int  x;
-    int  __JCOUNT_GENERIC; // faz trabalhos genéricos 
-    int  __jrand_init;  // numero aleatório da estrutura passiva
-    int  __jrand_next; // numero aleatório da estrutura ativa
+    register int  x,__JCOUNT_GENERIC;// faz trabalhos genéricos 
+    unsigned int  __jrand_init;  // numero aleatório da estrutura ativa
+    unsigned int  __jrand_out; // numero aleatório da estrutura passiva
     
-    __JINFO->__JINFO_INIT_COUT = __JINFO->__JINFO_NEXT_COUT =  __jlength;
+    __JINFO->__JINFO_INIT_COUT = __JINFO->__JINFO_OUT_COUT =  __jlength;
     __JINFO->__JRECURSIVE = 0;
     
     for(x=0,__JCOUNT_GENERIC=0;x<__jlength;x++)
@@ -24,12 +22,12 @@ tree_struct(__JTREE_EXPLAIT * __jtree_struct, __JTHREE_EXPLAIT_INFO * __JINFO, c
          (__jtree_struct+x)->FSIN = --__JCOUNT_GENERIC;
          (__jtree_struct+x)->FSOUT = --__JCOUNT_GENERIC;
          *(__JINFO->__JINFO_INIT+x) = x;
-         *(__JINFO->__JINFO_NEXT+x) = x;
+         *(__JINFO->__JINFO_OUT+x) = x;
     }
-    
+    srand (time(NULL));
     while(true)
     {
-        if(! __JINFO->__JINFO_INIT_COUT && ! __JINFO->__JINFO_NEXT_COUT)
+        if(! __JINFO->__JINFO_INIT_COUT && ! __JINFO->__JINFO_OUT_COUT)
             break; 
         else 
         {
@@ -39,44 +37,46 @@ tree_struct(__JTREE_EXPLAIT * __jtree_struct, __JTHREE_EXPLAIT_INFO * __JINFO, c
                   if( *(__JINFO->__JINFO_INIT+__jrand_init) == C_OFF)
                         continue;
                    
-                  __jrand_next = rand()%__jlength;
-                  if( *(__JINFO->__JINFO_NEXT+ __jrand_next) == C_OFF)
+                  __jrand_out = rand()%__jlength;
+                  if( *(__JINFO->__JINFO_OUT+ __jrand_out) == C_OFF)
                         continue;
                   
-                  if ((__jtree_struct+__jrand_next)->CLOSE == C_OPEN)
+                  if ((__jtree_struct+__jrand_out)->CLOSE == C_OPEN)
                   {               
-                    if(__JINFO->__JINFO_INIT_COUT == 1 && __JINFO->__JINFO_NEXT_COUT == 1 )
+                    if(__JINFO->__JINFO_INIT_COUT == 1 && __JINFO->__JINFO_OUT_COUT == 1 )
                         break;
                     
-                    else if ((__jtree_struct+__jrand_next)->OUT == C_OPEN && __jrand_init != __jrand_next)
-                        if(!recursive_tree(__jtree_struct,__JINFO,__jrand_init,__jrand_next))
+                    else if ((__jtree_struct+__jrand_out)->OUT == C_OPEN && __jrand_init != __jrand_out)
+                        if(!recursive_tree(__jtree_struct,__JINFO,__jrand_init,__jrand_out))
                                 break;
+                    else
+                        continue;
                  }
             }while(true);
 
-            (__jtree_struct+__jrand_init)->IN = C_CLOSE;
-             *(__JINFO->__JINFO_INIT+__jrand_init) = C_OFF;
+             (__jtree_struct+__jrand_init)->IN = C_CLOSE;
+            *(__JINFO->__JINFO_INIT+__jrand_init) = C_OFF;
              (__JINFO->__JINFO_INIT_COUT)--; 
             
-            (__jtree_struct+__jrand_next)->OUT = C_CLOSE;
-             *(__JINFO->__JINFO_NEXT+ __jrand_next) = C_OFF;
-            (__JINFO->__JINFO_NEXT_COUT)--;
+            (__jtree_struct+__jrand_out)->OUT = C_CLOSE;
+           *(__JINFO->__JINFO_OUT+ __jrand_out) = C_OFF;
+            (__JINFO->__JINFO_OUT_COUT)--;
             
-            (__jtree_struct+__jrand_init)->FSIN = __jrand_next;
-            (__jtree_struct+__jrand_next)->FSOUT = __jrand_init;
+            (__jtree_struct+__jrand_init)->FSIN = __jrand_out;
+            (__jtree_struct+__jrand_out)->FSOUT = __jrand_init;
             
             if ((__jtree_struct+__jrand_init)->IN == C_CLOSE && (__jtree_struct+__jrand_init)->OUT == C_CLOSE )
                 (__jtree_struct+__jrand_init)->CLOSE = C_CLOSE;
                
-            if ((__jtree_struct+__jrand_next)->IN == C_CLOSE && (__jtree_struct+__jrand_next)->OUT == C_CLOSE )
-                (__jtree_struct+__jrand_next)->CLOSE = C_CLOSE;
+            if ((__jtree_struct+__jrand_out)->IN == C_CLOSE && (__jtree_struct+__jrand_out)->OUT == C_CLOSE )
+                (__jtree_struct+__jrand_out)->CLOSE = C_CLOSE;
         }  
     };
     return 0;
 }
 
 static int 
-recursive_tree(__JTREE_EXPLAIT * __jtree_struct,__JTHREE_EXPLAIT_INFO * __JINFO,const int  __jinit,int __jnext)
+recursive_tree(__JTREE_EXPLAIT * __jtree_struct,__JTHREE_EXPLAIT_INFO * __JINFO,const unsigned int  __jinit,unsigned int __jnext)
 {
     (__JINFO->__JRECURSIVE)++;
     if(__jinit == (__jtree_struct+__jnext)->FSIN)
