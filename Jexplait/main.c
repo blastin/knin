@@ -17,36 +17,63 @@
 #include <time.h>
 
 int main(int argc, char** argv) {
-    unsigned int MAX_;
-     if(argc>1)   
+    unsigned int MAX_,FILECHECK_;
+     
+    if(argc>1)   
+     {
          MAX_ = atoi( *(argv+1));
+         
+         if(*(argv+2) != NULL)
+         {
+             printf("%s\n",*(argv+2));
+             FILECHECK_ = strcmp(*(argv+2),"FILE"); 
+         }
+         else
+             FILECHECK_ = 1;   
+     }
+    
      else
-         MAX_ = 500000;
+         MAX_ = 10;
     
     FILE *file;
-    file = fopen("return.txt","w");
+    
+    if(!FILECHECK_)
+        file = fopen("return.txt","w");
+    
     unsigned int x,count1,count2;
      double time_end;
     clock_t time_over,time_init;
     
     __JTHREE_EXPLAIT_INFO info;
     __JTREE_EXPLAIT * struct_base;
-    struct_base = (__JTREE_EXPLAIT *)malloc(MAX_ * sizeof(* struct_base));
+    struct_base = (__JTREE_EXPLAIT *)calloc(MAX_ ,sizeof(* struct_base));
     
-    info.__JINFO_INIT = (int*)malloc(MAX_*sizeof(*info.__JINFO_INIT));
-    info.__JINFO_OUT = (int*)malloc(MAX_*sizeof(*info.__JINFO_OUT));
-      
+    info.__JINFO_INIT = (int*)calloc(MAX_,sizeof(*info.__JINFO_INIT));
+    info.__JINFO_OUT = (int*)calloc(MAX_,sizeof(*info.__JINFO_OUT));
+    info.__JTREE_EXPLAIT_CIRCUIT = C_OPEN; // Circuito aberto|fechado;
+    
     printf("Iniciando conexões ....\n");
+    
     time_init = clock();
     tree_struct(struct_base,&info,MAX_);
     time_over = clock();
     time_end = ((double)time_over - time_init)/CLOCKS_PER_SEC;
     printf("Conexão realizada com sucesso\n");
-    fprintf(file,"Tempo total : %f segundos ou %f minutos ou %f horas\n",time_end,time_end/60,time_end/(60*60));
-    fprintf(file,"Foi necessário entrar %d vezes na função recursiva\n",info.__JRECURSIVE);
     
-   for(x=0;x<MAX_;x++) 
-        fprintf(file,"Struct[%8.1d] >> %8.1d | Struct[%8.1d] << %8.1d | status:%s\n",x,struct_base[x].FSIN,x,struct_base[x].FSOUT,(struct_base[x].CLOSE)? "fechada" : "aberta");
+    if(!FILECHECK_)
+    {
+        for(x=0;x<MAX_;x++) 
+                fprintf(file,"Struct[%8.1d] >> %8.1d | Struct[%8.1d] << %8.1d | status:%s\n",x,struct_base[x].FSIN,x,struct_base[x].FSOUT,(struct_base[x].CLOSE)? "fechada" : "aberta");
+    
+        fprintf(file,"Tempo total : %f segundos ou %f minutos ou %f horas\n",time_end,time_end/60,time_end/(60*60));
+        fprintf(file,"Foi necessário entrar %d vezes na função recursiva\n",info.__JRECURSIVE);
+    }
+    
+    else
+    {
+        fprintf(stdout,"Tempo total : %f segundos ou %f minutos ou %f horas\n",time_end,time_end/60,time_end/(60*60));
+        fprintf(stdout,"Foi necessário entrar %d vezes na função recursiva\n",info.__JRECURSIVE);
+    }
     
      for(x=count1=count2=0;x<MAX_;x++)
      {
@@ -57,23 +84,8 @@ int main(int argc, char** argv) {
     if((count1 + count2) == -(MAX_*2))
         printf("sucesso programa finalizado\n");
     
+    if(!FILECHECK_)
+        fclose(file);
     
-    fclose(file);
-    /*printf("rand_acess_fix[");
-    
-     
-    for(x=0;x<MAX_;x++)
-    {
-        printf("%d,",*(rand_acess_fix+x));
-    }
-    printf("]\nrand_acess_next[");
-    for(x=0;x<MAX_;x++)
-    {
-        printf("%d,",*(rand_acess_next+x));
-    }
-    putchar(']');
-    putchar('\n');*/
-     
-  
     return (EXIT_SUCCESS);
 }
