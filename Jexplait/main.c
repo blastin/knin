@@ -8,7 +8,11 @@
  ERROR:
  BUFFER OVERFLOW ACIMA DE 199.999 LIGAMENTOS
  * ESTUDAR CASO
+ * Problema esta na própria função recursiva 
+ * 
  
+ * modo de compilação : gcc  -Wall -Wextra -Werror -foptimize-sibling-calls  -O0 -fprefetch-loop-arrays -g3 main.c struct_tree.c
+ * modo de entrada ao programa : ./a.out "Quantidade de árvore" "Arquivo de saida" "CLOSE | OPEN"
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,8 +21,16 @@
 #include <time.h>
 
 int main(int argc, char** argv) {
-    unsigned int MAX_,FILECHECK_;
-     
+    
+    unsigned int MAX_,FILECHECK_,x,count1,count2;
+    double time_end;
+    
+    __JTREE_EXPLAIT * struct_base;
+    __JTHREE_EXPLAIT_INFO info;
+   
+    FILE *file;
+    clock_t time_over,time_init;
+    
     if(argc>1)   
      {
          MAX_ = atoi( *(argv+1));
@@ -30,30 +42,29 @@ int main(int argc, char** argv) {
          }
          else
              FILECHECK_ = 1;   
+         
+         if(*(argv+3) != NULL)
+         {
+             if(!strcmp(*(argv+3),"OPEN"))
+                 info.__JTREE_EXPLAIT_CIRCUIT = C_OPEN; // Circuito aberto|fechado;
+             else if(!strcmp(*(argv+3),"CLOSE"))
+                 info.__JTREE_EXPLAIT_CIRCUIT = C_CLOSE; // Circuito aberto|fechado;
+             else
+                  info.__JTREE_EXPLAIT_CIRCUIT = C_OPEN; // Circuito aberto|fechado;
+         }
      }
     
      else
          MAX_ = 10;
     
-    FILE *file;
-    
+    info.__JINFO_INIT = (int*)calloc(MAX_,sizeof(*info.__JINFO_INIT));
+    info.__JINFO_OUT = (int*)calloc(MAX_,sizeof(*info.__JINFO_OUT));
+    struct_base = (__JTREE_EXPLAIT *)calloc(MAX_ ,sizeof(* struct_base));
+     
     if(!FILECHECK_)
         file = fopen("return.txt","w");
     
-    unsigned int x,count1,count2;
-     double time_end;
-    clock_t time_over,time_init;
-    
-    __JTHREE_EXPLAIT_INFO info;
-    __JTREE_EXPLAIT * struct_base;
-    struct_base = (__JTREE_EXPLAIT *)calloc(MAX_ ,sizeof(* struct_base));
-    
-    info.__JINFO_INIT = (int*)calloc(MAX_,sizeof(*info.__JINFO_INIT));
-    info.__JINFO_OUT = (int*)calloc(MAX_,sizeof(*info.__JINFO_OUT));
-    info.__JTREE_EXPLAIT_CIRCUIT = C_OPEN; // Circuito aberto|fechado;
-    
     printf("Iniciando conexões ....\n");
-    
     time_init = clock();
     tree_struct(struct_base,&info,MAX_);
     time_over = clock();

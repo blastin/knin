@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 static int 
-recursive_tree(__JTREE_EXPLAIT *,__JTHREE_EXPLAIT_INFO*,const unsigned int ,unsigned int );
+recursive_tree(__JTREE_EXPLAIT *,unsigned int*,const unsigned int ,unsigned int );
 
 int 
 tree_struct(__JTREE_EXPLAIT * __jtree_struct, __JTHREE_EXPLAIT_INFO * __JINFO, const unsigned int  __jlength) {
@@ -56,7 +56,7 @@ tree_struct(__JTREE_EXPLAIT * __jtree_struct, __JTHREE_EXPLAIT_INFO * __JINFO, c
                     break;
 
                 else if ((__jtree_struct+__jrand_out)->OUT == C_OPEN && __jrand_init != __jrand_out)
-                    if(!recursive_tree(__jtree_struct,__JINFO,__jrand_init,__jrand_out))
+                    if(!recursive_tree(__jtree_struct,&__JINFO->__JRECURSIVE,__jrand_init,__jrand_out))
                             break;
                 
             }while(true);
@@ -91,14 +91,21 @@ tree_struct(__JTREE_EXPLAIT * __jtree_struct, __JTHREE_EXPLAIT_INFO * __JINFO, c
 }
 
 static int 
-recursive_tree(__JTREE_EXPLAIT * __jtree_struct,__JTHREE_EXPLAIT_INFO * __JINFO,const unsigned int  __jinit,unsigned int __jnext)
+recursive_tree(__JTREE_EXPLAIT * __jtree_struct,unsigned int * __JRECURSIVE,const unsigned int  __jinit,unsigned int __jnext)
 {
-    (__JINFO->__JRECURSIVE)++;
+    /* Acima de 199.999 ligamentos começa a dar problema com o recebimento do sinal SIGSEGV
+     * 
+     * SIGSEGV é o nome de um sinal conhecido por um processo informático 
+     * emitido quando acontece uma referência inválida de memória (segmentation fault)
+     *  em sistemas operativos POSIX.
+     */
+    (*__JRECURSIVE)++;
+    
     if(__jinit == (__jtree_struct+__jnext)->FSIN)
         return 1;
     else if((__jtree_struct+__jnext)->IN == C_CLOSE)
     {
-        if(recursive_tree(__jtree_struct,__JINFO,__jinit,(__jtree_struct+__jnext)->FSIN))
+        if(recursive_tree(__jtree_struct,__JRECURSIVE,__jinit,(__jtree_struct+__jnext)->FSIN))
             return 1;
         else return 0;
     }
