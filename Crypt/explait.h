@@ -11,7 +11,8 @@
 #endif
 
 #define __JNOTHING ;
-#define RECURSIVE_MAX 200000
+#define RECURSIVE_MAX 100000
+
 enum _enum {
 	C_OFF = -1,
 	C_OPEN = 0,
@@ -45,7 +46,9 @@ typedef struct{
 
 	unsigned int __JTREE_EXPLAIT_CIRCUIT : 1; /*  Caso o circuito seja fechado essa variável terá que ficar = 1 ,
 											  * Caso seja circuito aberto a variável terá que ficar = 0*/
+	char _CRYPT_char; // caracteres  para a criptografia 
 }__JTHREE_EXPLAIT_INFO;
 
 int
 tree_struct(__JTREE_EXPLAIT *, __JTHREE_EXPLAIT_INFO *, const unsigned int);
+

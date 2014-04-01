@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "tree.h"
+#include "explait.h"
 #include <string.h>
 #include <time.h>
 
@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
 	__JTREE_EXPLAIT * struct_base;
 	__JTHREE_EXPLAIT_INFO info;
 
-	FILE *file = NULL;
+	FILE *file = NULL,*LER,*CRYPT;
 	clock_t time_over, time_init;
 
 	if (argc>1)
@@ -45,17 +45,19 @@ int main(int argc, char** argv) {
 	info.__JINFO_OUT = (int*)calloc(MAX_, sizeof(*info.__JINFO_OUT));
 	struct_base = (__JTREE_EXPLAIT *)calloc(MAX_, sizeof(*struct_base));
 
-	if (!FILECHECK_){
-		//file = fopen("return.txt", "w");
-		if (!fopen_s(&file, "return.txt", "w"))
-			printf("Iniciando conexões ....\n");
-		else
-		{
-			fprintf(stdout, "Erro : Não foi possível criar o arquivo return.txt..!");
-			return(EXIT_FAILURE);
-		}
-			
+	if (!FILECHECK_)
+	{
+		#ifdef _WIN32
+			if (fopen_s(&file, "debug.txt", "w"))
+			{
+				fprintf(stdout, "Erro : Não foi possível criar o arquivo debug.txt..!");
+				return(EXIT_FAILURE);
+			}
+		#elif __unix__  
+			file = fopen("return.txt", "w");
+		#endif
 	}
+	printf("Iniciando conexões ....\n");
 	time_init = clock();
 	tree_struct(struct_base, &info, MAX_);
 	time_over = clock();
@@ -64,7 +66,7 @@ int main(int argc, char** argv) {
 
 	if (!FILECHECK_)
 	{
-		fprintf(file, "Será conectado : %d struct utilizando o metodo %s\n", MAX_, (MAX_ < RECURSIVE_MAX) ? "RECURSIVE" : "JUMP");
+		fprintf(file, "Foram conectados : %d struct utilizando o metodo %s\n", MAX_, (MAX_ < RECURSIVE_MAX) ? "RECURSIVE" : "JUMP");
 		for (x = 0; x<MAX_; x++)
 			fprintf(file, "Struct[%8.1d] >> %8.1d | Struct[%8.1d] << %8.1d | status:%s\n", x, struct_base[x].FSIN, x, struct_base[x].FSOUT, (struct_base[x].CLOSE) ? "fechada" : "aberta");
 
@@ -88,8 +90,12 @@ int main(int argc, char** argv) {
 	if ((count1 + count2) == -(MAX_ * 2.0))
 		printf("sucesso programa finalizado\n");
 
+
 	if (!FILECHECK_)
 		fclose(file);
 
+	printf("vamos tentar ler algo>\n");
+	//putc(*LER, stdout);
+	fclose(LER);
 	return (EXIT_SUCCESS);
 }
