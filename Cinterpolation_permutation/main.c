@@ -17,13 +17,11 @@ int main(int argc,char * argv[])
 
     struct Point pares;
 
-
     degrees = NULL;
     coefficients = NULL;
     pares.X = (double*)calloc(X_Y_SIZE_INIT,sizeof(double));
     pares.Y = (double*)calloc(X_Y_SIZE_INIT,sizeof(double));
 
-    printf("2^10 = %lf\n",pow_d(3,3));
     while(true)
     {
         if (i == size)
@@ -46,9 +44,15 @@ int main(int argc,char * argv[])
         }
     }
 
+    printf("---------------------------\n");
     printf("X[%ld] = [",pares.size);
     for(i = 0; i < pares.size; i++)
         printf("%lf%c",pares.X[i],((i+1) < pares.size) ? ',' : ']');
+    putchar('\n');
+
+    printf("Y[%ld] = [",pares.size);
+    for(i = 0; i < pares.size; i++)
+        printf("%lf%c",pares.Y[i],((i+1) < pares.size) ? ',' : ']');
     putchar('\n');
 
     coefficients = interpolation_mount(&pares);
@@ -65,6 +69,14 @@ int main(int argc,char * argv[])
     for(i = 0; i < size; i++)
         printf("%lf%c",degrees[i],((i+1) < size) ? ',' : ']');
     putchar('\n');
+
+    if(degrees[size-1])
+        printf("Px(x) = %lf*x^%lu",degrees[size-1],size-1);
+    for(i = (size-2) ; i > 0; i--) {
+        if(degrees[i])
+            printf(" %c %lf*x^%lu", ((degrees[i] < 0) ? '-' : '+'), ((degrees[i] < 0) ? -degrees[i] : degrees[i]), i);
+    }
+    printf(" %c %lf\n",((degrees[i] < 0) ? '-' : '+'),((degrees[i] < 0) ? -degrees[i] : degrees[i]));
 
     while(true)
     {

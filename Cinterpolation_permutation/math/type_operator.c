@@ -6,6 +6,7 @@
 #include "macros.h"
 
 double deftype(double x, double value, char operator) {
+
     switch(operator) {
         case SUM:
             x += value;
@@ -19,6 +20,8 @@ double deftype(double x, double value, char operator) {
         case DIV:
             if(value != 0)
                 x/=value;
+        default:
+            break;
     }
     return x;
 }

@@ -32,8 +32,7 @@ double * interpolation_mount(struct Point * Pares)
         pdy[i].Y[j] = '\0';
         pdy[i].size = j;
     }
-    printf("--------------------\n");
-
+    //printf("--------------------\n");
     for(i = 1 ; i < N; i++)
         for(j = 0 ; j < pdy[i].size; j++)
         {
@@ -43,12 +42,12 @@ double * interpolation_mount(struct Point * Pares)
             */
             temp1 = pdy[i-1].Y[j+1] - pdy[i-1].Y[j];
             temp2 = Pares->X[i+j] - Pares->X[j];
-            printf("temp = %lf\n",temp1/temp2);
+            //printf("temp = %lf\n",temp1/temp2);
             pdy[i].Y[j] = temp1/temp2;
         }
     for(i = 0 ; i < N ; i++)
         coefficients[i] = pdy[i].Y[0];
     coefficients[i] = '\0';
-    printf("--------------------\n");
+    //printf("---------------------------\n");
     return coefficients;
 }

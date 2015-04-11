@@ -8,8 +8,8 @@
 #include "./../../Permutation/permutation.h"
 #include "./../../math/combinatoria.h"
 #include <stdio.h>
-static void assembly_mount(double * degrees, double * X_mod,double coefficient,unsigned long N);
 
+static void assembly_mount(double * degrees, double * X_mod,double coefficient,unsigned long N);
 static double * X_modsignal(double * X,unsigned long size);
 
 double  * assembly_px(double * X, double * coefficients,unsigned long size)
@@ -29,11 +29,12 @@ double  * assembly_px(double * X, double * coefficients,unsigned long size)
         printf("%lf%c",X_mod[i],((i+1) < size) ? ',' : ']');
     }
     putchar('\n');
-
+    printf("---------------------------\n");
     for(i = 1;i < size; i++)
     {
         if(coefficients[i] != 0)
             assembly_mount(degrees,X_mod,coefficients[i],i);
+
         printf("Px[%lu] = [" ,(size));
         for(j = 0; j < size; j++)
         {
@@ -81,6 +82,7 @@ static void assembly_mount(double * degrees, double * X_mod,double coefficient,u
         }
         degrees[N - i] += (coefficient*soma*1.0);
         vector_parcial[N - i] = coefficient*soma*1.0;
+
         printf("N= %lu, K = %lu, vector_perm[%lu] = [",N,i,size);
         for(z = 0; z < size; z++)
         {

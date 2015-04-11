@@ -10,7 +10,7 @@ unsigned long combinatoria(unsigned long n,unsigned long k)
     unsigned long x;
     unsigned long y;
 
-    if(n<k || n < 0 || k < 0)
+    if(n<k)
         return 0;
 
     else if(n==k)

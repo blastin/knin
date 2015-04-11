@@ -14,7 +14,8 @@ double px_simplificada(double * degrees,unsigned long N, double x)
     {
         if(!degrees[i])
             continue;
-        //printf("N = %lu, x = %lf , degrees[%lu] = %lf,pow_d(%lf,%lu) = %lf,values = %lf -> values += %lf\n",N,x,i,degrees[i],x,i,pow_d(x,i),values,degrees[i] * pow_d(x,i));
+        //printf("N = %lu, x = %lf , degrees[%lu] = %lf,pow_d(%lf,%lu) = %lf,values = %lf -> values += %lf\n",
+        // N,x,i,degrees[i],x,i,pow_d(x,i),values,degrees[i] * pow_d(x,i));
         values += degrees[i] * pow_d(x,i);
     }
     return values;
