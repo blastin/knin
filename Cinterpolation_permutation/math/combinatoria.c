@@ -13,10 +13,10 @@ unsigned long combinatoria(unsigned long n,unsigned long k)
     if(n<k)
         return 0;
 
-    else if(n==k)
+    else if(n==k || !k)
         return 1;
 
-    else if((n-k)==1)
+    else if((n-k)==1 || k == 1)
         return n;
 
     else {

@@ -74,7 +74,8 @@ static void assembly_mount(double * degrees, double * X_mod,double coefficient,u
     vector_parcial = (double*)malloc((N+1)*sizeof(double));
 
 
-    for (i = 1; i <= N; i++) {
+    for (i = 1; i <= N; i++)
+    {
         vector_permutation = permutation(X_mod,N,i,'*');
         size = combinatoria(N,i);
         for(j = 0,soma = 0; j < size; j++) {

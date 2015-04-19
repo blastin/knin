@@ -23,6 +23,7 @@ int main(int argc,char * argv[])
     pares.Y = (double*)calloc(X_Y_SIZE_INIT,sizeof(double));
 
     while(true)
+
     {
         if (i == size)
         {
