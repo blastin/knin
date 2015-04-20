@@ -18,7 +18,8 @@ std::vector<long double> interpolation_mount(struct Point* Pares)
     unsigned long N;
     unsigned long i, j;
 
-    double temp1, temp2;
+    long double temp1;
+    long double temp2;
 
     std::vector<long double> coefficients;
 
@@ -27,11 +28,13 @@ std::vector<long double> interpolation_mount(struct Point* Pares)
     pdy[0].Y.reserve(Pares->Y.size());
     pdy[0].Y = Pares->Y;
     pdy[0].size = Pares->Y.size();
+
     for (i = 1, j = N - 1; i < N; i++, j--)
     {
         pdy[i].Y.reserve(j + 1);
         pdy[i].size = j;
     }
+
     for (i = 1; i < N; i++)
     {
         for (j = 0; j < pdy[i].size; j++)

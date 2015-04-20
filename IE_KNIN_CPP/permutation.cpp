@@ -19,13 +19,13 @@ std::vector<long double> permutation(std::vector<long double> vector,const long 
     long uindice;
     long nindice;
     long windice,windice_backup;
-    long j; // itera��es
+    long j; // iterações
 
     // vector
     std::vector<long double>v;
     std::vector<long> w;
 
-    //inicializa��o
+    //inicializações
     j = k = (K-1);
     windice_backup = W_INIT;
     CNK = combinatoria(N,K);

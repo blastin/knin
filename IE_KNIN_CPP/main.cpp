@@ -1,9 +1,9 @@
 #include <iostream>
-#include <stdio.h>
 #include <fstream>
 #include "interpolation.h"
 #include "assembly.h"
 #include "fpx.h"
+
 using namespace std;
 
 int main()

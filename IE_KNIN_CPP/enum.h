@@ -5,7 +5,8 @@
 #ifndef IE_KNIN_CPP_ENUM_H
 #define IE_KNIN_CPP_ENUM_H
 
-enum macros_operator{
+enum macros_operator
+{
     SUM = '+',
     SUB = '-',
     DIV = '/',
