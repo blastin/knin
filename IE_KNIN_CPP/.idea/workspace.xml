@@ -11,11 +11,7 @@
     </ADDITIONAL_GENERATION_ENVIRONMENT>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5f372eba-ec1b-4ef5-be9c-73e964ee0309" name="Default" comment="Atualizações e melhoramento">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/enum.h" afterPath="$PROJECT_DIR$/enum.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/interpolation.cpp" afterPath="$PROJECT_DIR$/interpolation.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.cpp" afterPath="$PROJECT_DIR$/main.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/permutation.cpp" afterPath="$PROJECT_DIR$/permutation.cpp" />
+    <list default="true" id="5f372eba-ec1b-4ef5-be9c-73e964ee0309" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <list id="cfbd7b22-5107-4154-a447-d3738362fbb3" name="Rejected commit: Default" comment="Atualizações e melhoramento">
@@ -294,7 +290,13 @@
       <option name="project" value="LOCAL" />
       <updated>1429494711963</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="limpeza IE">
+      <created>1429495995437</created>
+      <option name="number" value="00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1429495995437</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -354,7 +356,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Atualizações e melhoramento" />
-    <option name="LAST_COMMIT_MESSAGE" value="Atualizações e melhoramento" />
+    <MESSAGE value="limpeza IE" />
+    <option name="LAST_COMMIT_MESSAGE" value="limpeza IE" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
