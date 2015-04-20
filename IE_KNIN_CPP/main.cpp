@@ -37,21 +37,15 @@ int main()
     }
 
     outfile.open("PX.txt");
+
+    print_objects("X",pares.X,outfile);
+    print_objects("Y",pares.Y,outfile);
+
     coefficients = interpolation_mount(&pares);
-    cout << "coefficients[" << coefficients.size() << "] = ";
-    for(auto objects: coefficients)
-    {
-        cout << objects << ',';
-    }
-    cout << endl;
+    print_objects("coefficients",coefficients,outfile);
 
     degrees = assembly_px(pares.X,coefficients);
-    cout << "degrees[" << degrees.size() << "] = ";
-    for(auto objects: degrees)
-    {
-        cout << objects << ',';
-    }
-    cout << endl;
+    print_objects("degrees",degrees,outfile);
 
     px_sfuncao(degrees,outfile);
     px_cfuncao(coefficients,pares.X,outfile);

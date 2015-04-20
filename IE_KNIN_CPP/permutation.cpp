@@ -19,13 +19,13 @@ std::vector<long double> permutation(std::vector<long double> vector,const long 
     long uindice;
     long nindice;
     long windice,windice_backup;
-    long j,z; // iterações
+    long j; // iteraï¿½ï¿½es
 
     // vector
     std::vector<long double>v;
     std::vector<long> w;
 
-    //inicialização
+    //inicializaï¿½ï¿½o
     j = k = (K-1);
     windice_backup = W_INIT;
     CNK = combinatoria(N,K);
@@ -66,7 +66,7 @@ std::vector<long double> permutation(std::vector<long double> vector,const long 
             n = N - (windice + nindice);
             cnk = combinatoria(n,k);
 
-            for (z = 0; z < cnk; z++,indice++,((!j) ? uindice++ : 1))
+            for (unsigned long z = 0; z < cnk; z++,indice++,((!j) ? uindice++ : 1))
             {
                 v[indice] = deftype(v[indice], vector[uindice], Operator);
                 w[indice] = uindice;

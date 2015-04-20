@@ -2,7 +2,6 @@
 // Created by lisboa on 19/04/2015.
 //
 
-#include <stdio.h>
 #include <fstream>
 #include "fpx.h"
 #include "tools_math.h"
@@ -24,7 +23,7 @@ void px_sfuncao(std::vector<long double> degrees,std::ofstream& outfile)
     unsigned long i;
 
     size = degrees.size();
-    outfile << "Função Simplificada P(x)~ ";
+    outfile << "FunÃ§Ã£o Simplificada P(x)~ ";
     if(degrees[size-1] != 0)
         outfile << degrees[size-1] << "*x^" << size-1;
     for(i = size-2 ; i > 0 ; i--)
@@ -39,12 +38,14 @@ void px_sfuncao(std::vector<long double> degrees,std::ofstream& outfile)
         }
     }
     if(degrees[i] != 0)
-        outfile <<  ((degrees[i] < 0) ? " - " : " + ") << ((degrees[i] < 0) ? -degrees[i] : degrees[i]) << std::endl;
+        outfile <<  ((degrees[i] < 0) ? " - " : " + ") << ((degrees[i] < 0) ? -degrees[i] : degrees[i]) << "\n\n";
+    else
+        outfile << "\n\n";
 }
 
 void px_cfuncao(std::vector<long double> coefficients, std::vector<long double> X,std::ofstream& outfile)
 {
-    outfile << "Função normal P(x) ~ " << coefficients[0];
+    outfile << "FunÃ§Ã£o normal P(x) ~ " << coefficients[0];
     for(unsigned long i = 1 ; i < coefficients.size() ; i++)
     {
         if(coefficients[i])
@@ -65,6 +66,24 @@ void px_cfuncao(std::vector<long double> coefficients, std::vector<long double> 
             }
         }
     }
-    outfile << std::endl;
+    outfile << "\n\n";
 }
 
+void print_objects(const char* Name,std::vector<long double> vector,std::ofstream& outfile)
+{
+    unsigned long i;
+    unsigned long size;
+
+    size = vector.size();
+    i = 0;
+    outfile << Name << "[" << size << "] = ";
+    for(auto objects : vector)
+    {
+        outfile << objects;
+        if(++i < size )
+            outfile << ",";
+        else
+            outfile << "]" << "\n";
+    }
+
+}
