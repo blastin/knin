@@ -3,48 +3,48 @@
 //
 
 #include "permutation.h"
-#include "./../math/combinatoria.h"
-#include "./../math/macros.h"
-#include "./../math/type_operator.h"
+#include "tools_math.h"
 #include <stdlib.h>
 
-double * permutation(const double * U, const unsigned long N,const unsigned long K,const char operator)
+long double * permutation(long double * U,unsigned long N,unsigned long K,enum macros_operator operator)
 {
-    // Constantes
+    //Constant
     const short W_INIT = -1;
-    //
 
-    // Variáveis unsigned
+    //unsigned
     unsigned long CNK;
-    unsigned long z; // para iteração
-    unsigned long n,cnk;
-    //
+    unsigned long cnk;
+    unsigned long n;
+    unsigned long z;
 
-    //variáveis signed
-    signed int uindice,indice,nindice;
-    signed int windice,windice_backup;
-    signed int j,k;
-    //
 
-    // Ponteiros double
-    double *v = NULL;
-    //
+    //signed
+    long uindice;
+    long indice;
+    long nindice;
+    long windice;
+    long windice_backup;
+    long j;
+    long k;
 
-    //Ponteiro int
-    signed int *w = NULL;
-    //
 
-    //inicialização signed e unsigned
+    //Pointer long double
+    long double *v = NULL;
+
+
+    //Point long
+    long *w = NULL;
+
+    //inicialization
     j = k = (K - 1);
     windice_backup = W_INIT;
     CNK = combinatoria(N,K);
-    //
 
-    // Alocação de espaço
-    v = (double*)malloc(CNK*sizeof(double));
-    w = (signed int*)malloc(CNK*sizeof(signed int));
+    //Alloc memory
+    v = (long double*)malloc(CNK*sizeof(long double));
+    w = (long*)malloc(CNK*sizeof(long));
 
-    // Laço para inicialização dos valores para v,w
+    //inicialization 2
     for(z = 0; z < CNK ;z++)
     {
         if(operator == MUL || operator == DIV)
@@ -54,7 +54,8 @@ double * permutation(const double * U, const unsigned long N,const unsigned long
         w[z] = W_INIT;
     }
 
-    while (j >= 0) {
+    while (j >= 0)
+    {
         uindice = 0;
         nindice = 2;
         indice = 0;
@@ -64,8 +65,10 @@ double * permutation(const double * U, const unsigned long N,const unsigned long
             windice = w[indice];
             if (j > 0)
             {
-                if (indice > 0) {
-                    if (windice == windice_backup) {
+                if (indice > 0)
+                {
+                    if (windice == windice_backup)
+                    {
                         if (windice == W_INIT || (N - (uindice + 1)) > j)
                             nindice += 1;
                     } else
@@ -83,7 +86,8 @@ double * permutation(const double * U, const unsigned long N,const unsigned long
             n = N - (windice + nindice);
             cnk = combinatoria(n, k);
 
-            for (z = 0; z < cnk; z++,indice++,((!j) ? uindice++ : 1)) {
+            for (z = 0; z < cnk; z++,indice++,((!j) ? uindice++ : 1))
+            {
                 v[indice] = deftype(v[indice], U[uindice], operator);
                 w[indice] = uindice;
             }

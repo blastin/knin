@@ -1,0 +1,10 @@
+//
+// Created by jeff on 21/04/15.
+//
+
+#ifndef CINTERPOLATION_PERMUTATION_FOREACH_H
+#define CINTERPOLATION_PERMUTATION_FOREACH_H
+#define foreach(_OBJECTS,_POINTER,_SIZE)\
+unsigned long _i = 0;\
+for(_OBJECTS = _POINTER[_i]; _i++ < _SIZE;_OBJECTS = _POINTER[_i])
+#endif //CINTERPOLATION_PERMUTATION_FOREACH_H

@@ -5,6 +5,8 @@
 #ifndef CINTERPOLATION_PERMUTATION_PERMUTATION_H
 #define CINTERPOLATION_PERMUTATION_PERMUTATION_H
 
-double * permutation(const double* U,const unsigned long N,const unsigned long K,const char operator);
+#include "type_macro.h"
+
+long double * permutation(long double* U,unsigned long N,unsigned long K,enum macros_operator operator);
 
 #endif //CINTERPOLATION_PERMUTATION_PERMUTATION_H
