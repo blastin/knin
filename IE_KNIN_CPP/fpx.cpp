@@ -38,9 +38,9 @@ void px_sfuncao(std::vector<long double> degrees,std::ofstream& outfile)
         }
     }
     if(degrees[i] != 0)
-        outfile <<  ((degrees[i] < 0) ? " - " : " + ") << ((degrees[i] < 0) ? -degrees[i] : degrees[i]) << "\n\n";
+        outfile <<  ((degrees[i] < 0) ? " - " : " + ") << ((degrees[i] < 0) ? -degrees[i] : degrees[i]) << "\n";
     else
-        outfile << "\n\n";
+        outfile << "\n";
 }
 
 void px_cfuncao(std::vector<long double> coefficients, std::vector<long double> X,std::ofstream& outfile)
@@ -66,7 +66,7 @@ void px_cfuncao(std::vector<long double> coefficients, std::vector<long double> 
             }
         }
     }
-    outfile << "\n\n";
+    outfile << "\n";
 }
 
 void print_objects(const char* Name,std::vector<long double> vector,std::ofstream& outfile)
@@ -76,7 +76,7 @@ void print_objects(const char* Name,std::vector<long double> vector,std::ofstrea
 
     size = vector.size();
     i = 0;
-    outfile << Name << "[" << size << "] = ";
+    outfile << Name << "[" << size << "] = [";
     for(auto objects : vector)
     {
         outfile << objects;
