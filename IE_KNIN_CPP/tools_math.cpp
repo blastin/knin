@@ -20,7 +20,7 @@ unsigned long fatorial(unsigned long n,unsigned long l = 0)
     unsigned long i = 0;
     unsigned long y = 1;
 
-    if (n == 0)
+    if (n == 0 || n == 1)
         return 1;
 
     else

@@ -6,7 +6,7 @@
 #define W_INIT (-1)
 
 
-std::vector<long double> permutation(std::vector<long double> vector,const long N,const unsigned long K,macros_operator Operator)
+std::vector<long double> permutation(std::vector<long double> U,const long N,const unsigned long K,macros_operator Operator)
 {
     // Unsigned
     unsigned long CNK;
@@ -68,7 +68,7 @@ std::vector<long double> permutation(std::vector<long double> vector,const long 
 
             for (unsigned long z = 0; z < cnk; z++,indice++,((!j) ? uindice++ : 1))
             {
-                v[indice] = deftype(v[indice], vector[uindice], Operator);
+                v[indice] = deftype(v[indice], U[uindice], Operator);
                 w[indice] = uindice;
             }
         }while(indice < CNK);

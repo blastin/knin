@@ -12,4 +12,6 @@ struct Point
      std::vector<long double>Y;
 };
 
+bool  search_value_eqX(std::vector<long double> X,long double Xnew);
+
 #endif //IE_KNIN_CPP_POINT_H

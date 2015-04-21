@@ -27,12 +27,21 @@ int main()
         {
             cin.clear();
             cin.get();
-            break;
+
+            if(pares.X.size() >= 2)
+                break;
+            else
+                cout << "Pontos insuficientes." << endl;
         }
         else
         {
-            pares.X.push_back(x);
-            pares.Y.push_back(y);
+            if(! search_value_eqX(pares.X,x))
+            {
+                pares.X.push_back(x);
+                pares.Y.push_back(y);
+            }
+            else
+                cout << "Error : Value : <" << x << "> duplicado" << endl;
         }
     }
 
@@ -43,12 +52,12 @@ int main()
 
     coefficients = interpolation_mount(&pares);
     print_objects("coefficients",coefficients,outfile);
+    px_cfuncao(coefficients,pares.X,outfile);
 
     degrees = assembly_px(pares.X,coefficients);
     print_objects("degrees",degrees,outfile);
-
     px_sfuncao(degrees,outfile);
-    px_cfuncao(coefficients,pares.X,outfile);
+
     outfile.close();
 
     while(true)
