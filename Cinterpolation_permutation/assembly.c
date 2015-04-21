@@ -1,9 +1,8 @@
 //
 // Created by jeff on 21/04/15.
 //
-
-#include "assembly.h"
 #include <stdlib.h>
+#include "assembly.h"
 #include "permutation.h"
 #include "foreach.h"
 #include "tools_math.h"
