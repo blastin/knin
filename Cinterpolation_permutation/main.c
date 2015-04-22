@@ -59,7 +59,7 @@ int main(int argc,char * argv[])
                 pares.size = count;
 
             } else
-                printf("\nError : Value : <%Lf> duplicado\n\n",x);
+                printf("\nErrorValue : <%Lf> duplicado\n\n",x);
         }
     }
 
