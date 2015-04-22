@@ -93,5 +93,4 @@ void print_objects(char* Name,long double* vector,unsigned long size,FILE* outfi
         else
             fprintf(outfile,"]\n");
     }
-    printf("Hello : %s\n",Name);
 }
