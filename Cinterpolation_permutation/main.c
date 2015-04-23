@@ -78,7 +78,7 @@ int main(int argc,char * argv[])
 
     fclose(outfile);
 
-    script  = fopen("script_gnu.gnu","w");
+    script  = fopen("script.plt","w");
     gnuplot_script(pares.X,degrees,size,script);
 
     fclose(script);
