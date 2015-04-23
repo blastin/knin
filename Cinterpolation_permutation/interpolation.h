@@ -6,5 +6,5 @@
 #define CINTERPOLATION_PERMUTATION_INTERPOLATION_H
 
 #include "point.h"
-long double * interpolation_mount(struct Point * Pares);
+extern long double * interpolation_mount(struct Point * Pares);
 #endif //CINTERPOLATION_PERMUTATION_INTERPOLATION_H

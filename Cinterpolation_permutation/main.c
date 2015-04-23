@@ -6,7 +6,7 @@
 #include "interpolation.h"
 #include "assembly.h"
 #include "fpx.h"
-
+#include "gnu_script.h"
 int main(int argc,char * argv[])
 {
     struct Point pares;
@@ -20,7 +20,7 @@ int main(int argc,char * argv[])
     long double *degrees;
     long double *coefficients;
 
-    FILE * outfile;
+    FILE * outfile,* script;
 
     degrees = NULL;
     coefficients = NULL;
@@ -55,7 +55,7 @@ int main(int argc,char * argv[])
 
                 pares.X[count] = x;
                 pares.Y[count] = y;
-                ++count;
+                count++;
                 pares.size = count;
 
             } else
@@ -78,6 +78,11 @@ int main(int argc,char * argv[])
 
     fclose(outfile);
 
+    script  = fopen("script_gnu.gnu","w");
+    gnuplot_script(pares.X,degrees,size,script);
+
+    fclose(script);
+
     while(true)
     {
         printf("x= ");
@@ -86,6 +91,5 @@ int main(int argc,char * argv[])
         else
             printf("Ps(x) ~ %Lf\n",px_simplificada(degrees,size,x));
     }
-
     return 0;
 }

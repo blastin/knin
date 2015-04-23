@@ -5,6 +5,7 @@
 #include "permutation.h"
 #include "tools_math.h"
 #include <stdlib.h>
+#include <string.h>
 
 long double * permutation(long double * U,unsigned long N,unsigned long K,enum macros_operator operator)
 {
@@ -40,10 +41,16 @@ long double * permutation(long double * U,unsigned long N,unsigned long K,enum m
     windice_backup = W_INIT;
     CNK = combinatoria(N,K);
 
-    //Alloc memory
+    //Alloc memory and values
     v = (long double*)malloc(CNK*sizeof(long double));
     w = (long*)malloc(CNK*sizeof(long));
 
+    /*if(operator == MUL || operator == DIV)
+        memset(v,1,CNK*sizeof(long double));
+    else
+        memset(v,0,CNK*sizeof(long double));
+    memset(w,W_INIT,CNK*sizeof(long));
+*/
     //inicialization 2
     for(z = 0; z < CNK ;z++)
     {
