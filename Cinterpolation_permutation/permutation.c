@@ -97,6 +97,5 @@ long double * permutation(long double * U,unsigned long N,unsigned long K,enum m
     }
 
     free(w);
-    w = NULL;
     return v;
 }

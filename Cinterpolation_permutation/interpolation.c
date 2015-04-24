@@ -6,14 +6,10 @@
 #include "interpolation.h"
 #include <stdlib.h>
 
-struct Pdy_
-{
-    long double * Y;
-    unsigned long size;
-};
-
 long double * interpolation_mount(struct Point * Pares)
 {
+    struct Pdy_ { long double * Y;unsigned long size; }pdy[Pares->size];
+
     unsigned long N;
     unsigned long i;
     unsigned long j;
@@ -21,13 +17,10 @@ long double * interpolation_mount(struct Point * Pares)
     long double temp1;
     long double temp2;
 
-    long double *coefficients = NULL;
-
-    struct Pdy_ *pdy = NULL;
+    long double *coefficients;
 
     N = Pares->size;
 
-    pdy = (struct Pdy_*)malloc(N*sizeof(struct Pdy_));
     pdy[0].Y = Pares->Y;
     pdy[0].size = N;
 
@@ -53,7 +46,11 @@ long double * interpolation_mount(struct Point * Pares)
             pdy[i].Y[j] = (temp1 / temp2);
         }
         coefficients[i-1] = pdy[i-1].Y[0];
+        free(pdy[i-1].Y);
     }
+
     coefficients[i-1] = pdy[i-1].Y[0];
+    free(pdy[i-1].Y);
+
     return coefficients;
 }

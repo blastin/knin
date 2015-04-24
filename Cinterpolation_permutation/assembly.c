@@ -12,14 +12,13 @@ long double* assembly_px(long double* X,long double* coefficients,unsigned long 
     unsigned long j;
     unsigned long size_vector;
 
-    long double* degrees;
-    long double* Xmod;
-    long double* vector_permutation;;
+    long double * degrees;
+    long double * Xmod;
+    long double * vector_permutation;;
 
     long double sum;
     long double objects;
 
-    degrees = NULL;
     vector_permutation = NULL;
     Xmod = (long double*)calloc(size,sizeof(long double));
 
@@ -44,8 +43,10 @@ long double* assembly_px(long double* X,long double* coefficients,unsigned long 
                 size_vector = combinatoria(i,j);
                 foreach(objects,vector_permutation,size_vector)
                     sum += objects;
+
                 free(vector_permutation);
                 vector_permutation = NULL;
+
                 degrees[i-j] += coefficients[i]*sum;
             }
             degrees[i] += coefficients[i];

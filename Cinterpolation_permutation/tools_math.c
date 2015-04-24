@@ -76,3 +76,11 @@ long double deftype(long double x,long double value,enum macros_operator operato
     }
     return x;
 }
+
+void change(long double * a, long double * b)
+{
+    long double temp;
+    temp = *a;
+    *a   = *b;
+    *b   = temp;
+}

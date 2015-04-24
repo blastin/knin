@@ -39,12 +39,13 @@ int main(int argc,char * argv[])
             if(pares.size >= 2)
             {
                 size = pares.size;
+                sort_point(pares.X,pares.Y,pares.size);
                 break;
             }else
                 printf("\nPontos insuficientes.\n\n");
         }else
         {
-            if(! search_value_eqX(pares.X,pares.size,x))
+            if(! double_search(pares.X,pares.size,x))
             {
                 if(count >= size)
                 {
