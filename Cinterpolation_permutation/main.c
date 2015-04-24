@@ -84,6 +84,7 @@ int main(int argc,char * argv[])
 
     fclose(script);
 
+    free(coefficients);
     while(true)
     {
         printf("x= ");

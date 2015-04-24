@@ -29,8 +29,8 @@ void sort_point(long double * X,long double * Y,unsigned long size)
         {
             if(X[i+1] < X[i])
             {
-                change(X+i,X+i+1);
-                change(Y+i,Y+i+1);
+                swap(X+i,X+i+1);
+                swap(Y+i,Y+i+1);
                 check = true;
             }
         }

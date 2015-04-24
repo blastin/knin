@@ -6,29 +6,28 @@
 
 long double pow_d(long double x,unsigned long exp)
 {
-    unsigned long i;
-    double values;
-    for(i = 0,values = 1; i < exp ; i++)
-        values *= x;
-    return values;
+    long double base;
+
+    base = x;
+
+    if(!exp)
+        return 1;
+
+    while(--exp)
+        x *= base;
+    return x;
 }
 
 unsigned long fatorial(unsigned long n,unsigned long l)
 {
-    unsigned long i = 0;
-    unsigned long y = 1;
+    unsigned long i;
+    unsigned long y;
 
-    if (n == 0)
+    if (!n)
         return 1;
-
     else
-    {
-        while (i < l)
-        {
+        for(i = 0,y = 1;i < l;i++)
             y *= n - i;
-            i += 1;
-        }
-    }
     return y;
 }
 
@@ -37,13 +36,13 @@ unsigned long combinatoria(unsigned long n,unsigned long k)
     unsigned long x;
     unsigned long y;
 
-    if(n<k)
+    if( n < k )
         return 0;
 
-    else if(n==k || !k)
+    else if(n == k || !k)
         return 1;
 
-    else if((n-k)==1 || k == 1)
+    else if((n - k) == 1 || k == 1)
         return n;
 
     else
@@ -58,7 +57,8 @@ unsigned long combinatoria(unsigned long n,unsigned long k)
 long double deftype(long double x,long double value,enum macros_operator operator)
 {
 
-    switch(operator) {
+    switch(operator)
+    {
         case SUM:
             x += value;
             break;
@@ -77,7 +77,7 @@ long double deftype(long double x,long double value,enum macros_operator operato
     return x;
 }
 
-void change(long double * a, long double * b)
+void swap(long double * a, long double * b)
 {
     long double temp;
     temp = *a;

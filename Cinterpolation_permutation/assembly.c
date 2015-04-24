@@ -45,8 +45,6 @@ long double* assembly_px(long double* X,long double* coefficients,unsigned long 
                     sum += objects;
 
                 free(vector_permutation);
-                vector_permutation = NULL;
-
                 degrees[i-j] += coefficients[i]*sum;
             }
             degrees[i] += coefficients[i];
