@@ -77,7 +77,7 @@ void px_cfuncao(long double* coefficients,long double* X,unsigned long size,FILE
     fprintf(outfile,"\n");
 }
 
-void print_objects(const char* Name,long double* vector,unsigned long size,FILE* outfile)
+void print_objects(char* const Name,long double* vector,unsigned long size,FILE* outfile)
 {
     long double objects;
     unsigned long i;
