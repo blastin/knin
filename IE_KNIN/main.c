@@ -91,7 +91,10 @@ int main(int argc,char * argv[])
         if(scanf("%Lf",&x) != 1)
             break;
         else
-            printf("Ps(x) ~ %Lf\n",px_simplificada(degrees,size,x));
+        {
+            y = px_simplificada(degrees, size, x);
+            printf("Ps(x) ~ %Lf\n",y);
+        }
     }
     return 0;
 }

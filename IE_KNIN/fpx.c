@@ -11,10 +11,12 @@ long double px_simplificada(long double*degrees,unsigned long size,long double x
 {
     long double y;
     long double objects;
+
     unsigned long i;
 
     if (!x)
         return degrees[0];
+
     else
     {
         y = 0;
@@ -59,6 +61,7 @@ void px_cfuncao(long double* coefficients,long double* X,unsigned long size,FILE
 {
     unsigned long i;
     unsigned long j;
+
     fprintf(outfile,"Função normal P(x) ~  %Lf",coefficients[0]);
     for(i = 1 ; i <size ; i++)
     {
@@ -85,11 +88,11 @@ void px_cfuncao(long double* coefficients,long double* X,unsigned long size,FILE
 void print_objects(char* const Name,long double* vector,unsigned long size,FILE* outfile)
 {
     long double objects;
+
     unsigned long i;
 
     i = 0;
     fprintf(outfile,"%s[%lu] = [",Name,size);
-
     foreach(objects,vector,size)
     {
         fprintf(outfile,"%Lf",objects);
