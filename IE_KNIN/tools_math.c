@@ -8,13 +8,22 @@ long double pow_d(long double x,unsigned long exp)
 {
     long double base;
 
-    base = x;
-    if(!exp)
+    if(!x && !exp)
+        return -1;//TODO:0^0 ErrorMath
+
+    if(!exp || x == 1)
         return 1;
-    else if(x == 0.000000)
+
+    else if(!x)
         return 0;
-    while(--exp)
-        x *= base;
+
+    else
+    {
+        base = x;
+        while(--exp)
+            x *= base;
+    }
+
     return x;
 }
 

@@ -13,13 +13,18 @@ long double px_simplificada(long double*degrees,unsigned long size,long double x
     long double objects;
     unsigned long i;
 
-    y = 0;
-    i = 0;
-
-    foreach(objects,degrees,size)
+    if (!x)
+        return degrees[0];
+    else
     {
-        y += objects * pow_d(x, i);
-        i++;
+        y = 0;
+        i = 0;
+        foreach(objects, degrees, size)
+        {
+            if(objects)
+                y += objects * pow_d(x, i);
+            i++;
+        }
     }
     return y;
 }
