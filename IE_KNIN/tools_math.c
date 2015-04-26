@@ -9,10 +9,10 @@ long double pow_d(long double x,unsigned long exp)
     long double base;
 
     base = x;
-
     if(!exp)
         return 1;
-
+    else if(x == 0.000000)
+        return 0;
     while(--exp)
         x *= base;
     return x;

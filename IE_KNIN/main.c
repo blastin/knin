@@ -64,7 +64,7 @@ int main(int argc,char * argv[])
         }
     }
 
-    outfile = fopen("PX.txt","w");
+    outfile = fopen("IE-saida.data","w");
 
     print_objects("X",pares.X,size,outfile);
     print_objects("Y",pares.Y,size,outfile);
