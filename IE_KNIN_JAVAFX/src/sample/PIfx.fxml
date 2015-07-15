@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<Pane fx:controller="sample.Controller" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label layoutX="23.0" layoutY="58.0" text="X" />
+      <TextField fx:id="Xtext" layoutX="40.0" layoutY="54.0" onAction="#xtext" onInputMethodTextChanged="#Xtextmethod" prefHeight="22.0" prefWidth="70.0" />
+      <Label layoutX="121.0" layoutY="58.0" prefHeight="14.0" prefWidth="6.0" text="Y" />
+      <TextField fx:id="Ytext" layoutX="132.0" layoutY="54.0" onAction="#ytext" onInputMethodTextChanged="#Ytextmethod" prefHeight="22.0" prefWidth="70.0" />
+      <Button fx:id="button1" defaultButton="true" layoutX="210.0" layoutY="54.0" mnemonicParsing="false" onAction="#inserir" text="Inserir" textFill="#eb0505" />
+      <Button fx:id="button2" disable="true" layoutX="264.0" layoutY="54.0" mnemonicParsing="false" onAction="#gerar" text="Gerar" textFill="#eb0707" />
+      <TextArea fx:id="Pgfieldtext" editable="false" layoutX="234.0" layoutY="177.0" prefHeight="76.0" prefWidth="364.0" />
+      <TextArea fx:id="Pxfieldtext" editable="false" layoutX="234.0" layoutY="269.0" prefHeight="76.0" prefWidth="364.0" />
+      <Label layoutX="234.0" layoutY="163.0" text="Pg(x) = " />
+      <Label layoutX="234.0" layoutY="255.0" text="P(x) = " />
+      <Label layoutX="107.0" layoutY="10.0" prefHeight="30.0" prefWidth="393.0" text="Permutação e Interpolação - KNiN" textAlignment="CENTER" textFill="#2f5d8f">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+      </Label>
+      <Accordion layoutY="197.0" />
+      <Button fx:id="button_Px" layoutX="471.0" layoutY="54.0" mnemonicParsing="false" onAction="#value_for_px" text="Valor" />
+      <TextField fx:id="valueX" layoutX="343.0" layoutY="54.0" onInputMethodTextChanged="#Ytextmethod" prefHeight="22.0" prefWidth="102.0" />
+      <Label layoutX="309.0" layoutY="83.0" text="P(x) = " />
+      <Separator layoutX="107.0" layoutY="178.0" orientation="VERTICAL" prefHeight="215.0" prefWidth="17.0" />
+      <TextArea fx:id="Xfieldtext" layoutX="6.0" layoutY="178.0" prefHeight="215.0" prefWidth="102.0" />
+      <TextArea fx:id="Yfieldtext" layoutX="123.0" layoutY="178.0" prefHeight="215.0" prefWidth="102.0" />
+      <Label layoutX="44.0" layoutY="163.0" text="X" />
+      <Label layoutX="171.0" layoutY="163.0" text="Y" />
+      <Label layoutX="323.0" layoutY="58.0" text="X" />
+      <TextField fx:id="Px_return" layoutX="343.0" layoutY="79.0" onInputMethodTextChanged="#Ytextmethod" prefHeight="22.0" prefWidth="102.0" />
+      <Button fx:id="button_graphic1" layoutX="370.0" layoutY="355.0" mnemonicParsing="false" onAction="#bgraphicpx" text="Graphic" />
+   </children>
+   <effect>
+      <Blend />
+   </effect>
+</Pane>
+
+
